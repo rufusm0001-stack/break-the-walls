@@ -37,15 +37,51 @@
   (CANNON, Robux) at the top right.
 
 ## Our version: Roblox theme, better feel
-- **Style:** bright stud/brick Roblox look. Voxels are real Parts, chunky and satisfying, with a pop and a shake on hit.
-- **Tools (hotbar 1-3):** Fists → Hammer → Drill / Cannon. Vacuum is always slot 2.
-- **HUD:** Money (top left, big), Storage bar, Energy bar, hotbar at the bottom centre, zone name at the top.
-- **Upgrades:** keep the 3-tab tree idea (Digging / Collection / Automation), but as a proper Roblox UI panel.
-- **Zones:** each broken-through wall opens the next room. Walls get tougher, with new block types (brick, metal,
-  gold ore) that are worth more.
-- **Prestige:** TODO, after zones are in.
+- **Style:** colourful stud/brick toy style (we follow the `roblox-stud-game` playbook). Cubes are real Parts that
+  pop and shake when hit.
+- **Tools (hotbar):** 1 Fists, 2 Vacuum, then 3+ Hammer, Drill, Cannon, bought at tool podiums.
+- **HUD:** Money (top left), Storage bar, hotbar at the bottom centre, zone name at the top. There is **no energy bar**.
+- **Upgrades:** the 3-tab tree (Digging / Collection / Automation) as a proper toy-style panel.
+- **Prestige:** TODO, after zones 1-3 are in.
 
-## Open questions
-- Energy or no energy? The original uses it; Sami's version doesn't seem to.
-- Sell pad or deposit machine?
-- Starting numbers: wall size, voxel HP, sell price.
+## Decisions (settled 2026-10-15)
+| Question | Decision |
+|----------|----------|
+| Energy | **None.** You can punch as fast as the tool cooldown allows. Speed comes from tool and cooldown upgrades instead. |
+| Selling | **Deposit machine.** Walk up and dump your storage into a conveyor machine, and +$ popups fly out. It can be upgraded later (auto-deposit, multiplier). |
+| Payout | **Money only on deposit.** Hits just break cubes. This keeps the vacuum and storage meaningful. |
+| Pacing | **Fast start.** First upgrade in about 1 minute, Zone 1 cleared in about 10 minutes. |
+| Structure | **Sections like the Roblox version.** Each section has its own spawn area (deposit machine, tool podium, upgrade board) and its own rock type and theme twist. |
+
+## Starting numbers (Zone 1, all in the Config module)
+| Value | Start |
+|-------|-------|
+| Cube size | 2 studs |
+| Zone 1 wall | 16 wide x 10 tall x 2 deep cubes (32 x 20 studs) |
+| Hits per cube (Fists) | 2 |
+| Punch cooldown | 0.35 s |
+| Punch pattern | cross of 5 cubes (centre takes full damage, the ring takes half) |
+| Cube value | $1 (stone) |
+| Storage | 50 cubes |
+| First upgrades | $50 / $150 / $400 (Radius, Power, Depth), like the original |
+| Hammer | $250 at the podium: 4 hits' worth of damage, bigger pattern |
+
+## Sections / zones
+Every section = **spawn area** (safe room: deposit machine, tool podium, upgrade board, zone sign) → **the wall
+area** → the way into the next section. Each section has a new rock type that's worth more, a new palette, and a
+twist.
+
+| # | Theme | Rock | Twist |
+|---|-------|------|-------|
+| 1 | Stone facility, the starter room | Grey stone ($1) | Straight forward: break through the one wall in front of you. A tutorial. |
+| 2 | **Mine cave** | **Orange ore blocks** ($3) | **Not straight forward.** A sign at the entrance reads "Not every room is straight forward". The cave splits left and right, with dead ends and hidden paths, and players have to find the way through. |
+| 3 | TBD | TBD | **Boss room:** a boss you fight before the wall opens. |
+| 4+ | TBD | Each harder and worth more | Mix: maze rooms, boss rooms, timed walls, hidden layers (like the rusty layer in the original). |
+
+**Bosses (some sections):** an arena room, with a boss you hit with the same tools. When it's beaten it drops a big
+cube burst and opens the path. Design them once zones 1-2 work.
+
+## Still open
+- Themes for zones 3+ and the first boss.
+- Prestige rules.
+- Robux items (the competitor sells a premium Cannon). Decide later; the owner handles anything that costs Robux.

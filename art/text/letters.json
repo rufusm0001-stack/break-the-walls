@@ -1,0 +1,376 @@
+{
+ "font": "seguibl.ttf",
+ "glyphs": {
+  "A": {
+   "name": "L_65",
+   "width": 0.646,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.6021,
+   "tris": 520
+  },
+  "B": {
+   "name": "L_66",
+   "width": 0.5198,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5365,
+   "tris": 1804
+  },
+  "C": {
+   "name": "L_67",
+   "width": 0.4911,
+   "height": 0.6145,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.4785,
+   "tris": 1536
+  },
+  "D": {
+   "name": "L_68",
+   "width": 0.5664,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5832,
+   "tris": 1020
+  },
+  "E": {
+   "name": "L_69",
+   "width": 0.4099,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.4267,
+   "tris": 236
+  },
+  "F": {
+   "name": "L_70",
+   "width": 0.4,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.4168,
+   "tris": 196
+  },
+  "G": {
+   "name": "L_71",
+   "width": 0.5605,
+   "height": 0.6145,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.5478,
+   "tris": 1616
+  },
+  "H": {
+   "name": "L_72",
+   "width": 0.5693,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.586,
+   "tris": 236
+  },
+  "I": {
+   "name": "L_73",
+   "width": 0.2286,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.2454,
+   "tris": 76
+  },
+  "J": {
+   "name": "L_74",
+   "width": 0.3934,
+   "height": 0.6057,
+   "depth": 0.25,
+   "centerY": 0.2586,
+   "advance": 0.3735,
+   "tris": 776
+  },
+  "K": {
+   "name": "L_75",
+   "width": 0.58,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5968,
+   "tris": 456
+  },
+  "L": {
+   "name": "L_76",
+   "width": 0.4099,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.4267,
+   "tris": 116
+  },
+  "M": {
+   "name": "L_77",
+   "width": 0.7084,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.7252,
+   "tris": 1036
+  },
+  "N": {
+   "name": "L_78",
+   "width": 0.577,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5937,
+   "tris": 936
+  },
+  "O": {
+   "name": "L_79",
+   "width": 0.6002,
+   "height": 0.6145,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.5875,
+   "tris": 2100
+  },
+  "P": {
+   "name": "L_80",
+   "width": 0.5003,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5171,
+   "tris": 960
+  },
+  "Q": {
+   "name": "L_81",
+   "width": 0.712,
+   "height": 0.6761,
+   "depth": 0.25,
+   "centerY": 0.2322,
+   "advance": 0.6993,
+   "tris": 1960
+  },
+  "R": {
+   "name": "L_82",
+   "width": 0.538,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5547,
+   "tris": 1440
+  },
+  "S": {
+   "name": "L_83",
+   "width": 0.4575,
+   "height": 0.6144,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.4525,
+   "tris": 2432
+  },
+  "T": {
+   "name": "L_84",
+   "width": 0.5256,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.502,
+   "tris": 156
+  },
+  "U": {
+   "name": "L_85",
+   "width": 0.5348,
+   "height": 0.6057,
+   "depth": 0.25,
+   "centerY": 0.2586,
+   "advance": 0.5456,
+   "tris": 916
+  },
+  "V": {
+   "name": "L_86",
+   "width": 0.6165,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5721,
+   "tris": 356
+  },
+  "W": {
+   "name": "L_87",
+   "width": 0.8661,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.8291,
+   "tris": 916
+  },
+  "X": {
+   "name": "L_88",
+   "width": 0.6507,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5889,
+   "tris": 876
+  },
+  "Y": {
+   "name": "L_89",
+   "width": 0.5997,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.5447,
+   "tris": 496
+  },
+  "Z": {
+   "name": "L_90",
+   "width": 0.5116,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.499,
+   "tris": 196
+  },
+  "0": {
+   "name": "L_48",
+   "width": 0.4739,
+   "height": 0.6147,
+   "depth": 0.25,
+   "centerY": 0.2631,
+   "advance": 0.462,
+   "tris": 1300
+  },
+  "1": {
+   "name": "L_49",
+   "width": 0.342,
+   "height": 0.6082,
+   "depth": 0.25,
+   "centerY": 0.2691,
+   "advance": 0.3364,
+   "tris": 496
+  },
+  "2": {
+   "name": "L_50",
+   "width": 0.4408,
+   "height": 0.6053,
+   "depth": 0.25,
+   "centerY": 0.2676,
+   "advance": 0.4388,
+   "tris": 1696
+  },
+  "3": {
+   "name": "L_51",
+   "width": 0.4225,
+   "height": 0.6145,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.4316,
+   "tris": 2316
+  },
+  "4": {
+   "name": "L_52",
+   "width": 0.5054,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.4869,
+   "tris": 540
+  },
+  "5": {
+   "name": "L_53",
+   "width": 0.4232,
+   "height": 0.6056,
+   "depth": 0.25,
+   "centerY": 0.2586,
+   "advance": 0.4352,
+   "tris": 1416
+  },
+  "6": {
+   "name": "L_54",
+   "width": 0.4632,
+   "height": 0.6138,
+   "depth": 0.25,
+   "centerY": 0.2634,
+   "advance": 0.4635,
+   "tris": 2340
+  },
+  "7": {
+   "name": "L_55",
+   "width": 0.4551,
+   "height": 0.5964,
+   "depth": 0.25,
+   "centerY": 0.2632,
+   "advance": 0.4561,
+   "tris": 696
+  },
+  "8": {
+   "name": "L_56",
+   "width": 0.471,
+   "height": 0.6137,
+   "depth": 0.25,
+   "centerY": 0.2634,
+   "advance": 0.4605,
+   "tris": 3504
+  },
+  "9": {
+   "name": "L_57",
+   "width": 0.464,
+   "height": 0.6145,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.4539,
+   "tris": 2540
+  },
+  "!": {
+   "name": "L_33",
+   "width": 0.2446,
+   "height": 0.6057,
+   "depth": 0.25,
+   "centerY": 0.2586,
+   "advance": 0.2598,
+   "tris": 872
+  },
+  "?": {
+   "name": "L_63",
+   "width": 0.3924,
+   "height": 0.6215,
+   "depth": 0.25,
+   "centerY": 0.2665,
+   "advance": 0.3681,
+   "tris": 2272
+  },
+  "'": {
+   "name": "L_39",
+   "width": 0.2085,
+   "height": 0.2323,
+   "depth": 0.25,
+   "centerY": 0.4578,
+   "advance": 0.2337,
+   "tris": 76
+  },
+  "&": {
+   "name": "L_38",
+   "width": 0.6525,
+   "height": 0.6145,
+   "depth": 0.25,
+   "centerY": 0.263,
+   "advance": 0.6398,
+   "tris": 3124
+  },
+  "-": {
+   "name": "L_45",
+   "width": 0.2708,
+   "height": 0.1754,
+   "depth": 0.25,
+   "centerY": 0.197,
+   "advance": 0.2883,
+   "tris": 76
+  }
+ },
+ "spaceWidth": 0.28,
+ "capHeight": 0.5964
+}

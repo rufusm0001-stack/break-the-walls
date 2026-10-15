@@ -1,5 +1,7 @@
 # Break the Walls: rules for Claude
 
+@AGENTS.md
+
 A Roblox incremental game, inspired by the Steam game *Break the Walls*. **Three people on three devices and three accounts** work on it, each with their own Claude. This repo is how sessions hand work over to each other.
 
 ## Start of every session
