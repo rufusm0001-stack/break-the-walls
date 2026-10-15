@@ -9,6 +9,7 @@ Put your name in **Claimed by** before you start a task, and push it so the othe
 | Upgrade shop | UI | | todo |
 | Wall hitting + currency + saving (core loop: punch, vacuum, deposit, save, HUD, checkpoints) | Core | Rufus's Claude (main PC) | done (saving needs Studio API access to verify) |
 | Wall tiers + map | Art / world | | todo |
+| NEXT_PROMPT jobs 1-5 (UI fixes, arms, icons, Meshy packs, half-size walls) | UI / Art / World | Rufus's Claude (main PC) | in progress |
 
 ## Team
 | Person | Device | GitHub account |
