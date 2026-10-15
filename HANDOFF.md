@@ -120,6 +120,7 @@
 Nothing was published and no Robux was spent.
 
 ## Next step (start here)
+**Read `NEXT_PROMPT.md` first.** It holds Rufus's latest feedback as 5 ordered jobs: cursor and hotbar colours, thinner arms, a better icon set (coin, consistent knuckles, 6 vacuums), Meshy reference packs, and smaller and deeper wall cubes. The list below is the longer-term order after that.
 1. Swap the placeholder vacuum for `Vacuum_Basic` and add the knuckle models on the hand.
 2. Tool podium shop (set FistTier / VacuumTier on purchase): knuckle tiers and vacuum tiers (add `Config.Knuckles` and `Config.Vacuums` tier tables).
 3. Upgrade board (Digging: Radius, Power, Depth).
