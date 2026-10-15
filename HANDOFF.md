@@ -86,6 +86,35 @@
   StreamingEnabled is off.
 - **Client:** break chunks scale with the cube size (5 chunks instead of 7).
 
+### 6. Tool models are in the game (late in the session)
+- **Vacuums (Meshy):**
+  - `art/meshy_multi.py` sent the 4 views per tier to multi-image-to-3D: 6 x 30 = 180 credits, 2,913 left.
+  - The GLBs and thumbnails are in `art/models/Vacuum_<Tier>/`.
+- **Upload:** `art/roblox_upload.py` uploaded all 11 models (6 vacuums + 5 Blender dusters) through Open Cloud.
+  - It picks the Roblox key that has Assets access by probing; key text is never printed.
+  - The asset ids are in `art/models/uploaded.json`.
+- **In Studio:** `ReplicatedStorage.ToolModels` holds `Knuckles_<Tier>` (MeshParts coloured from
+  `knuckles_colours.json`; metals are shiny SmoothPlastic) and `Vacuum_<Tier>` (one textured MeshPart each, nozzle
+  along +X).
+- **`FirstPersonArms` now shows them:**
+  - **FistTier 1-5:** the duster on both viewmodel hands. It's laid on the face of the fist the camera can see
+    (the far punching end is hidden in first person), with the bar level and the spikes towards the wall.
+  - **VacuumTier 0-5:** the real vacuum in the right hand. Its length is 2.6-3.9 studs by tier; the nozzle drives
+    `State.nozzle`.
+  - The part-built placeholder vacuum is only a fallback now.
+- **Checked in Play:**
+  - gold dusters on both fists
+  - the Basic vacuum held and aimed at the crosshair
+  - console: only the DataStore line
+  - Screenshots: `ui/screenshots/pass3/2026-10-15_gold-dusters-first-person.jpg`, `..._meshy-vacuum-held.jpg`.
+- **Not done yet:**
+  - Other players don't see the dusters or vacuums; it's first person only. A server weld on the character is the
+    next step.
+  - Only Gold and Basic were looked at in game. The rest should be eyeballed.
+  - The vacuum fills a lot of the right side; tune `VAC_LENGTH` / the offset in `FirstPersonArms` if needed.
+- **Security note:** one Roblox key line in api.txt (the one with Assets access) had its first 60 characters
+  printed into a session log by mistake. Rufus should regenerate that key.
+
 ### Checked in Play (screenshots in `ui/screenshots/pass3/`)
 - the centre dot, slimmer arms and the light-blue hotbar
 - the settings panel with the AIM row
@@ -109,26 +138,17 @@
 
 ## Owner steps
 - **Save the place** in Studio (File → Save to Roblox). The wall rebuild and the scripts live in the open session.
-- **Meshy: the 6 vacuums.**
-  - Upload the 4 views from each `meshy\Vacuum_<Tier>\` folder; the settings are in prompt.txt.
-  - Import each FBX, then `insert_asset` it into `ServerStorage.MeshyImports` under the same name.
-- **Knuckle dusters:**
-  - Check `art/blender/export/_icons_vs_models.png` first.
-  - Import `Desktop\Break The Walls\blender\Knuckles_*.fbx` (or `.glb`) with File → Import 3D.
-  - Then ask the next agent to wire them in.
+- **Regenerate the Roblox Open Cloud key that has Assets access** (see the security note above), then
+  update api.txt.
+- **Save the place** after this session's last changes (the tool models and FirstPersonArms).
 - **Turn on Game Settings → Security → "Enable Studio Access to API Services"** to test saving. That's still open.
 - From before: `Lighting.Technology` = ShadowMap, Avatar R15, review Zone 3.
 
 Nothing was published and no Robux was spent. This pass spent about $3.0 on Gemini (logged in `art/LEDGER.md`).
 
 ## Next step (start here)
-1. **Weld the dusters on.**
-   - Once Rufus imports the Blender FBXs, clone the tier's model onto `RightHand` / `LeftHand` with
-     `C0 = CFrame.identity`, and colour it from `knuckles_colours.json`.
-   - Do it on both the character and `Camera.ViewModel`. The viewmodel copy is scaled (0.88, 1.1, 0.88).
-   - Drive it from the `FistTier` attribute.
-2. **Swap the vacuum placeholder** for the Meshy `Vacuum_<Tier>` models, scaled by tier (about 1.2x, 1.35x, 1.5x for
-   tiers 3-5).
+1. **Third-person tools:** a server weld of the duster / vacuum onto the character so other players see them.
+2. **Look at every tier in game** (FistTier 1-5, VacuumTier 0-5) and tune the sizes and offsets.
 3. **Tool podium shop:** add `Config.Knuckles` / `Config.Vacuums` tier tables and set FistTier / VacuumTier on
    purchase.
 4. **Upgrade board:** Radius, Power, Depth.

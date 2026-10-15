@@ -136,6 +136,31 @@ for _, d in ipairs(VAC_PARTS) do
 end
 vac.Parent = camera
 
+-- Real vacuum models (Meshy, ReplicatedStorage.ToolModels.Vacuum_<Tier>, one textured MeshPart each, nozzle along
+-- the model's +X). VacuumTier 0-5 picks one; tiers 3-5 are held bigger. The part-built placeholder above stays as
+-- the fallback if the models folder is missing.
+local VACUUMS = { [0] = "Basic", "Turbo", "Cyclone", "Mega", "Titan", "Vortex" }
+local VAC_LENGTH = { [0] = 2.6, 2.6, 2.7, 3.1, 3.5, 3.9 } -- studs, nozzle to tail
+local vacModel -- { part, len, height }
+local function buildVacuum()
+	if vacModel then vacModel.part:Destroy() end
+	vacModel = nil
+	local tier = player:GetAttribute("VacuumTier") or 0
+	local models = RS:FindFirstChild("ToolModels")
+	local template = models and models:FindFirstChild("Vacuum_" .. (VACUUMS[tier] or "Basic"))
+	if not template then return end
+	local copy = template:Clone()
+	local _, size = copy:GetBoundingBox()
+	copy:ScaleTo(VAC_LENGTH[tier] / size.X)
+	local part = copy:FindFirstChildWhichIsA("BasePart")
+	_, size = copy:GetBoundingBox()
+	prep(part)
+	part.Parent = vac
+	copy:Destroy()
+	vacModel = { part = part, len = size.X, height = size.Y }
+end
+player:GetAttributeChangedSignal("VacuumTier"):Connect(buildVacuum)
+
 -- wind streaks rushing back into the mouth while sucking: a box of emitters ahead of the nozzle
 local windShell = Instance.new("Part")
 windShell.Name = "WindShell"
@@ -171,6 +196,59 @@ State.Jab.Event:Connect(function()
 	if a then a.punch = 1 end
 	nextArm = nextArm % 2 + 1
 end)
+
+-- Knuckle dusters (ReplicatedStorage.ToolModels.Knuckles_<Tier>, Blender models from art/blender/knuckles.py) on
+-- both viewmodel hands while FistTier >= 1. The models are authored in hand space (origin = hand centre, punching
+-- end = hand -Y, spikes along +Z); in this rig the hand's width axis is vertical on screen, so each copy is turned
+-- 90 degrees about the arm (spikes up on both hands, bar level across the knuckles) and scaled to the slimmer
+-- first-person hand.
+local KNUCKLES = { "Bronze", "Iron", "Gold", "Diamond", "Energy" }
+local DUSTER_SCALE = 0.9
+local ToolModels = RS:WaitForChild("ToolModels", 10)
+local dusters = {} -- side -> { { part, offset, baseT } }
+
+local function buildDusters()
+	for _, list in pairs(dusters) do
+		for _, d in ipairs(list) do d.part:Destroy() end
+	end
+	dusters = {}
+	local tier = player:GetAttribute("FistTier") or 0
+	local template = ToolModels and KNUCKLES[tier] and ToolModels:FindFirstChild("Knuckles_" .. KNUCKLES[tier])
+	if not template then return end
+	for _, side in ipairs({ -1, 1 }) do
+		local copy = template:Clone()
+		copy:ScaleTo(DUSTER_SCALE)
+		local pivot = copy:GetPivot()
+		local list = {}
+		for _, p in ipairs(copy:GetDescendants()) do
+			if p:IsA("BasePart") then
+				table.insert(list, { part = p, offset = pivot:ToObjectSpace(p.CFrame), baseT = p.Transparency })
+				prep(p)
+				p.Parent = vm
+			end
+		end
+		copy:Destroy()
+		dusters[side] = list
+	end
+end
+player:GetAttributeChangedSignal("FistTier"):Connect(buildDusters)
+buildDusters()
+buildVacuum()
+
+local function layDusters(side, hand, visible)
+	local list = dusters[side]
+	if not list then return end
+	-- the camera sees the hand's +X face (right hand) / -X face (left hand), not the far punching end, so the duster
+	-- is laid on that visible face: model X (bar) -> hand Z (level on screen), model -Y (outward) -> up on screen,
+	-- model +Z (spikes) -> hand -Y (towards the wall)
+	local up = hand.Size.X / 2 - 0.16
+	local base = hand.CFrame * CFrame.fromMatrix(Vector3.new(side * up, 0, 0),
+		Vector3.new(0, 0, side), Vector3.new(-side, 0, 0), Vector3.new(0, -1, 0))
+	for _, d in ipairs(list) do
+		d.part.CFrame = base * d.offset
+		d.part.Transparency = visible and d.baseT or 1
+	end
+end
 
 -- lay one arm's segments from the shoulder forward along root's -Z, knuckles-forward, back of the hand up
 local function layArm(a, root, visible)
@@ -210,6 +288,8 @@ RunService:BindToRenderStep("FirstPersonArms", Enum.RenderPriority.Camera.Value 
 			* CFrame.new(side * tv("x"), tv("y") + math.sin(bob + side) * amp, tv("z") - jab)
 			* CFrame.Angles(math.rad(tv("pitch") + jab * 6), math.rad(side * inward), math.rad(-side * tv("roll")))
 		layArm(a, root, inFirst)
+		local hand = a.parts[#a.parts]
+		if hand then layDusters(side, hand.part, inFirst and State.equipped == 1) end
 		if side > 0 then
 			grip = root * CFrame.new(0, 0.1, -(a.reach - 0.35))
 		end
@@ -225,12 +305,20 @@ RunService:BindToRenderStep("FirstPersonArms", Enum.RenderPriority.Camera.Value 
 		* CFrame.new(0, -0.35, 0.3) * shake
 	for name, v in pairs(vacParts) do
 		local cf = base * v.offset
-		if name == "Mouth" then
+		if name == "Mouth" and not vacModel then
 			cf *= CFrame.Angles(0, 0, spin)
 			State.nozzle = cf
 		end
 		v.part.CFrame = cf
-		v.part.Transparency = holdingVac and 0 or 1
+		v.part.Transparency = (holdingVac and not vacModel) and 0 or 1
+	end
+	if vacModel then
+		-- grip in the hand, body above it and forward; model +X (nozzle) turned to point down the barrel (-Z)
+		local L, H = vacModel.len, vacModel.height
+		local body = base * CFrame.new(0, H * 0.32, -L * 0.28) * CFrame.Angles(0, math.rad(90), 0)
+		vacModel.part.CFrame = body
+		vacModel.part.Transparency = holdingVac and 0 or 1
+		State.nozzle = base * CFrame.new(0, H * 0.32, -L * 0.78) * CFrame.Angles(0, 0, spin)
 	end
 	windShell.CFrame = base * CFrame.new(0, 0.3, -7)
 	wind.Enabled = holdingVac and State.vacuuming

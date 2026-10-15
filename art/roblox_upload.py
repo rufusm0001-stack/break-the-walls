@@ -1,7 +1,9 @@
-"""Upload Meshy models to Roblox through Open Cloud (Assets API) as Model assets.
+"""Upload models to Roblox through Open Cloud (Assets API) as Model assets, owned by Rufus (user 903739180).
 
-Usage: python roblox_upload.py name ...   (reads art/models/<name>/<name>.glb, falls back to .fbx)
-Writes the resulting asset id into art/models/<name>/task.json under "robloxAssetId".
+Usage: python roblox_upload.py path/to/model.glb ...     (or a Name, meaning art/models/<Name>/<Name>.glb|.fbx)
+Prints "uploaded <name> -> <assetId>" and appends the ids to art/models/uploaded.json. Then insert the asset in
+Studio with the MCP insert_asset (or InsertService:LoadAsset in Edit) and move it into ServerStorage.ToolModels.
+The key line is chosen by trying asset read on each Roblox key in api.txt; keys are never printed.
 """
 import json
 import sys
@@ -15,65 +17,74 @@ ART = Path(__file__).parent
 CREATOR_USER_ID = "903739180"
 API = "https://apis.roblox.com/assets/v1"
 CONTENT_TYPES = {".glb": "model/gltf-binary", ".fbx": "model/fbx"}
+PROBE_ASSET = "126732731360060"  # the stud tile this game already uploaded
 
 
 def roblox_key() -> str:
-    # Prefer the key made for this game; fall back to the older general one.
-    lines = KEY_FILE.read_text(encoding="utf-8").splitlines()
-    for prefix in ("roblox cooal mining game", "roblox coal mining game", "rolbox", "roblox"):
-        for line in lines:
-            if line.lower().startswith(prefix):
-                return line.split("-", 1)[1].strip()
-    sys.exit("no roblox key found")
+    for line in KEY_FILE.read_text(encoding="utf-8").splitlines():
+        low = line.strip().lower()
+        if not low.startswith(("roblox", "rolbox")):
+            continue
+        key = line.split(" - ", 1)[1].strip() if " - " in line else line.split("-", 1)[1].strip()
+        r = requests.get(f"{API}/assets/{PROBE_ASSET}", headers={"x-api-key": key}, timeout=30)
+        if r.ok:
+            return key
+    sys.exit("no Roblox key with Assets read access found in api.txt")
 
 
-def upload(key: str, name: str) -> str:
-    folder = ART / "models" / name
-    for ext in (".fbx", ".glb"):
-        path = folder / f"{name}{ext}"
-        if not path.exists():
-            continue
-        request = {
-            "assetType": "Model",
-            "displayName": f"FTD_{name}",
-            "description": "Find The Diamond In The Coal - stud-style model",
-            "creationContext": {"creator": {"userId": CREATOR_USER_ID}},
-        }
-        r = requests.post(
-            f"{API}/assets",
-            headers={"x-api-key": key},
-            files={
-                "request": (None, json.dumps(request), "application/json"),
-                "fileContent": (path.name, path.read_bytes(), CONTENT_TYPES[ext]),
-            },
-            timeout=300,
-        )
-        if r.status_code != 200:
-            print(f"{name}{ext}: HTTP {r.status_code} {r.text[:300]}", flush=True)
-            continue
-        operation = r.json()
-        op_path = operation.get("path") or f"operations/{operation['operationId']}"
-        for _ in range(60):
-            op = requests.get(f"{API}/{op_path}", headers={"x-api-key": key}, timeout=60).json()
-            if op.get("done"):
-                if "response" in op:
-                    return op["response"]["assetId"]
-                raise RuntimeError(f"{name}: {op.get('error')}")
-            time.sleep(3)
-        raise RuntimeError(f"{name}: upload operation timed out")
-    raise RuntimeError(f"{name}: no file could be uploaded")
+def resolve(arg: str) -> Path:
+    p = Path(arg)
+    if p.suffix:
+        return p
+    for ext in (".glb", ".fbx"):
+        q = ART / "models" / arg / f"{arg}{ext}"
+        if q.exists():
+            return q
+    raise FileNotFoundError(arg)
+
+
+def upload(key: str, path: Path) -> str:
+    request = {
+        "assetType": "Model",
+        "displayName": f"BTW_{path.stem}",
+        "description": "Break The Walls tool model",
+        "creationContext": {"creator": {"userId": CREATOR_USER_ID}},
+    }
+    r = requests.post(
+        f"{API}/assets",
+        headers={"x-api-key": key},
+        files={
+            "request": (None, json.dumps(request), "application/json"),
+            "fileContent": (path.name, path.read_bytes(), CONTENT_TYPES[path.suffix.lower()]),
+        },
+        timeout=300,
+    )
+    if r.status_code != 200:
+        raise RuntimeError(f"{path.name}: HTTP {r.status_code} {r.text[:300]}")
+    op = r.json()
+    op_path = op.get("path") or f"operations/{op['operationId']}"
+    for _ in range(100):
+        o = requests.get(f"{API}/{op_path}", headers={"x-api-key": key}, timeout=60).json()
+        if o.get("done"):
+            if "response" in o:
+                return o["response"]["assetId"]
+            raise RuntimeError(f"{path.name}: {o.get('error')}")
+        time.sleep(3)
+    raise RuntimeError(f"{path.name}: upload operation timed out")
 
 
 def main() -> None:
     key = roblox_key()
-    for name in sys.argv[1:]:
+    log_path = ART / "models" / "uploaded.json"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log = json.loads(log_path.read_text()) if log_path.exists() else {}
+    for arg in sys.argv[1:]:
         try:
-            asset_id = upload(key, name)
-            meta_path = ART / "models" / name / "task.json"
-            meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
-            meta["robloxAssetId"] = asset_id
-            meta_path.write_text(json.dumps(meta, indent=2))
-            print("uploaded", name, "->", asset_id, flush=True)
+            path = resolve(arg)
+            asset_id = upload(key, path)
+            log[path.stem] = asset_id
+            log_path.write_text(json.dumps(log, indent=2))
+            print("uploaded", path.stem, "->", asset_id, flush=True)
         except Exception as exc:
             print("FAILED", exc, flush=True)
 

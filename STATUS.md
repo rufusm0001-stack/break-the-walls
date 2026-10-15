@@ -6,6 +6,7 @@
 - Vacuum Meshy packs: 4 views + icon + prompt each, in Desktop\Break The Walls\meshy (about $1.0). The knuckle dusters are built in Blender to the measured R15 hand and modelled on each icon (art/blender/knuckles.py, FBX + GLB per tier, Cycles previews; rebuilt once after Rufus said the first pass had no colour or depth).
 - Walls: 1-stud cubes, 32x20 face, 5/6/7 layers deep, half-stud grid keys, a 4x6 checkpoint hole, rebalanced Hits. 13.5k parts. Checked in Play: punching, the Zone 2 unlock, the vacuum. map_qa clean, ZFight 0.
 - Key scan: no API keys in any local repo or its git history.
+- Tool models live: Meshy multi-image made the 6 vacuums (180 credits). Those and the 5 Blender dusters were uploaded through Open Cloud into ReplicatedStorage.ToolModels, and FirstPersonArms shows them by FistTier / VacuumTier. Checked in Play (gold dusters, basic vacuum).
 
 ## 2026-10-15 (Rufus's Claude, main PC): UI icons
 - Made 15 icons with Gemini after the top-up (about $0.62): coin, gear, mouse, music, speaker, 6 fist tiers and 4 vacuum tiers. They're cut from magenta, uploaded with upload_image, and wired into the money pill, gear, settings rows and hotbar (tier-aware). Checked in Play.
