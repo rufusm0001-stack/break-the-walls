@@ -6,16 +6,18 @@
 **By:** Rufus (device: main PC)
 
 ## What was being worked on
-- Repo setup only. No game code or UI yet.
+- Watched the reference videos, saved 16 frames to `references/`, and wrote the full mechanics into `DESIGN.md`.
+- No game code yet.
 
 ## Exact state
-- Roblox place: TBD (add the place ID and Team Create link here)
-- Files / Instance paths touched: none
+- Roblox place: **Break The Walls**, placeId **104446080960521** (open in Studio on the main PC)
+- Files touched: DESIGN.md, references/
 
 ## Next step (start here)
-1. Fill in `DESIGN.md` with the reference game's mechanics.
-2. Add reference images to `references/`.
-3. Build the main HUD (see `ui/UI_PROGRESS.md`).
+1. Build the core loop in Studio: a voxel wall, the Fists punch with a grid preview, falling cubes, the Vacuum,
+   selling, and Money.
+2. Then the HUD (Money, Storage, Energy, hotbar). See `ui/UI_PROGRESS.md`.
+3. Then the upgrade panel (Digging tab first).
 
 ## Watch out for
-- Nothing yet.
+- The open questions at the bottom of `DESIGN.md` (energy? sell pad or deposit machine?) still need deciding.
