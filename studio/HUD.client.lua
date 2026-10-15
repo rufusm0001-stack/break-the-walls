@@ -1,6 +1,7 @@
 -- StarterPlayerScripts.HUD: the minimal core-loop HUD, built only with ToyUI (docs/UI_RULES.md, 1280x720 budget).
--- Top right: Money pill (counts up). Bottom centre: Storage bar above a 2-slot hotbar (1 Fists, 2 Vacuum).
--- Centre: crosshair and toasts. +$ popups float out of the deposit machine as you deposit.
+-- Top right: Money pill (counts up), left of the settings gear (SettingsUI). Bottom centre: Storage bar above a
+-- 2-slot hotbar (1 Fists, 2 Vacuum). Toasts at the top. +$ popups float out of the deposit machine.
+-- No crosshair: the punch grid preview is the aim.
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -30,7 +31,7 @@ local gui = ToyUI.root("HUD", player:WaitForChild("PlayerGui"))
 -- MONEY (top right) -------------------------------------------------------------------
 local moneyRoot, moneyFace = ToyUI.block({
 	Parent = gui, Name = "Money", Size = UDim2.fromOffset(192, 48),
-	Position = UDim2.new(1, -16, 0, 12), AnchorPoint = Vector2.new(1, 0), color = T.gold, depth = 4,
+	Position = UDim2.new(1, -16 - 48 - 12, 0, 12), AnchorPoint = Vector2.new(1, 0), color = T.gold, depth = 4,
 })
 local moneyText = ToyUI.label(moneyFace, {
 	Text = "$0", TextSize = 30, Size = UDim2.new(1, -24, 1, 0), Position = UDim2.fromOffset(12, 0),
@@ -167,6 +168,7 @@ for i, s in ipairs(SLOTS) do
 		Text = tostring(i), TextSize = 14, Size = UDim2.fromOffset(16, 16), Position = UDim2.fromOffset(4, 2), ZIndex = 12,
 	})
 	hit.Activated:Connect(function()
+		State.Sfx:Fire("click")
 		State.equip(i)
 	end)
 	slotRoots[i] = root
@@ -198,29 +200,6 @@ local function showEquipped(slot)
 end
 State.EquipChanged.Event:Connect(showEquipped)
 showEquipped(State.equipped)
-
--- CROSSHAIR ---------------------------------------------------------------------------
--- its own ScreenGui with no insets, so the dot sits on the true screen centre (where the punch ray goes)
-local crossGui = Instance.new("ScreenGui")
-crossGui.Name = "Crosshair"
-crossGui.IgnoreGuiInset = true
-crossGui.ScreenInsets = Enum.ScreenInsets.None
-crossGui.ResetOnSpawn = false
-crossGui.Parent = player.PlayerGui
-local cross = Instance.new("Frame")
-cross.Name = "Dot"
-cross.AnchorPoint = Vector2.new(0.5, 0.5)
-cross.Position = UDim2.fromScale(0.5, 0.5)
-cross.Size = UDim2.fromOffset(6, 6)
-cross.BackgroundColor3 = T.white
-cross.Parent = crossGui
-local cc = Instance.new("UICorner")
-cc.CornerRadius = UDim.new(1, 0)
-cc.Parent = cross
-local cs = Instance.new("UIStroke")
-cs.Color = T.outline
-cs.Thickness = 2
-cs.Parent = cross
 
 -- TOASTS ------------------------------------------------------------------------------
 local toastRoot, toastFace = ToyUI.block({

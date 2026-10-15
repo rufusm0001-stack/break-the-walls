@@ -39,7 +39,9 @@
 ## Our version: Roblox theme, better feel
 - **Style:** colourful stud/brick toy style (we follow the `roblox-stud-game` playbook). Cubes are real Parts that
   pop and shake when hit.
-- **Tools (hotbar):** 1 Fists, 2 Vacuum, then 3+ Hammer, Drill, Cannon, bought at tool podiums.
+- **Tools (hotbar):** 1 Fists, 2 Vacuum. Both upgrade in tiers at the tool podium (decided 2026-10-15, the Hammer is dropped):
+  Fists → Bronze / Iron / Gold / Diamond / Energy **knuckle dusters** worn on the avatar's own hands, and Vacuum → Basic / Turbo / Mega / Vortex.
+  Drones and excavators come later (automation); no minecart yet. Prompts are in `art/MESHY_PROMPTS.md`.
 - **HUD:** Money (top left), Storage bar, hotbar at the bottom centre, zone name at the top. There is **no energy bar**.
 - **Upgrades:** the 3-tab tree (Digging / Collection / Automation) as a proper toy-style panel.
 - **Prestige:** TODO, after zones 1-3 are in.
@@ -64,7 +66,7 @@
 | Cube value | $1 (stone) |
 | Storage | 50 cubes |
 | First upgrades | $50 / $150 / $400 (Radius, Power, Depth), like the original |
-| Hammer | $250 at the podium: 4 hits' worth of damage, bigger pattern |
+| Knuckle dusters (tier 1) | replaces the Hammer: price and damage to balance (Config.Hammer numbers are the placeholder) |
 
 ## Sections / zones
 Every section = **spawn area** (safe room: deposit machine, tool podium, upgrade board, zone sign) → **the wall

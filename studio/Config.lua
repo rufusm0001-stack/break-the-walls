@@ -17,13 +17,25 @@ Config.Patterns = {
 }
 
 -- Vacuum (slot 2, hold LMB): pulls loose cubes inside a cone in front of the camera.
-Config.Vacuum = { slot = 2, range = 18, coneDot = 0.7, pullSpeed = 38, collectRadius = 3.5, tick = 0.05 }
+-- A cube caught in the cone is claimed (anchored) and every client flies it along a curved, swirling path into
+-- the nozzle; the server banks it when the flight ends (flight time = distance / pullSpeed, clamped).
+Config.Vacuum = {
+	slot = 2, range = 18, coneDot = 0.7, pullSpeed = 30, collectRadius = 3.5, tick = 0.05,
+	minFlight = 0.25, maxFlight = 0.7, swirl = 3,
+}
 
 Config.Storage = { start = 50 }
 
 -- Broken cubes drop as loose pickups. Past maxCount, new drops merge into a nearby loose cube
 -- (it carries Count) or the oldest one is recycled, so the part count stays bounded.
-Config.Loose = { size = 0.9, maxCount = 200, mergeRadius = 6 }
+Config.Loose = { size = 0.6, maxCount = 200, mergeRadius = 6 }
+
+-- Player settings (gear button): saved with the player's data.
+Config.Settings = {
+	sensitivity = { default = 0.45, min = 0.05, max = 1.5 }, -- UserInputService.MouseDeltaSensitivity
+	music = { default = 0.35, min = 0, max = 1 },
+	sfx = { default = 0.8, min = 0, max = 1 },
+}
 
 -- Deposit machine: pays the stored Value in batches while you stand in Function.DepositZone.
 Config.Deposit = { batch = 10, tick = 0.15 }

@@ -1,5 +1,13 @@
 # Status log
 
+## 2026-10-15 (Rufus's Claude, main PC): feel pass: avatar arms, sounds, settings, vacuum swirl
+- Arms are now your own avatar's R15 arms (cloned meshes and shirt, x1.1, angled in from the bottom corners). There's no cursor or crosshair now.
+- Punching got chunk bursts, dust and a camera kick. Loose cubes are smaller (0.6).
+- The vacuum now claims cubes, and every client flies them along curved paths with white wind trails into the nozzle.
+- Added sounds and an APM music playlist (BTW.Sounds), plus a gear button and a Settings panel (sensitivity, music, SFX), saved with the player's data. M opens it, and Left Alt frees the mouse.
+- Design: the Hammer is dropped. The tools are now knuckle-duster tiers and vacuum tiers (art/MESHY_PROMPTS.md).
+- Gemini icon generation is blocked (HTTP 402, prepaid credit used up). Nothing was spent. The script is ready (art/gen_icons.py).
+
 ## 2026-10-15 (Rufus's Claude, main PC): core loop + minimal HUD
 - Added the server-authoritative core loop. Fists punch with cross5 and a grid preview, broken cubes drop as capped loose cubes, the Vacuum stores them, the deposit machine pays out with +$ popups, and Money is in leaderstats. Saving uses DataStore and is Studio-safe.
 - When a wall has a passable hole, the next Spawn_ZoneN is enabled and becomes the player's checkpoint. Added a ToyUI HUD (money, storage bar, 2-slot hotbar). FirstPersonArms now jabs on real punches and holds a part-built Vacuum.

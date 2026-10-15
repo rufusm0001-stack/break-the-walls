@@ -27,6 +27,7 @@ local VacuumRE = remote("Vacuum") -- client -> (on, lookVector)
 local EquipRE = remote("Equip") -- client -> (slot)
 local DepositRE = remote("DepositPaid") -- server -> (amount, worldPos)
 local ToastRE = remote("Toast") -- server -> (text, colorName)
+local SettingsRE = remote("Settings") -- client -> ({ sensitivity, music, sfx })
 remotes.Parent = BTW
 
 -- Collision: loose cubes never shove players around ---------------------------------------
@@ -44,32 +45,48 @@ do
 	end)
 	store = ok and ds or nil
 end
-local data = {} -- player -> { money, checkpoint, storageCount, storageValue, loaded }
+local data = {} -- player -> { money, checkpoint, storageCount, storageValue, settings, loaded, reserved }
 local DEFAULT = { money = 0, checkpoint = 1, storageCount = 0, storageValue = 0 }
 
+local function cleanSettings(t)
+	local out = {}
+	for k, spec in pairs(Config.Settings) do
+		local v = type(t) == "table" and t[k]
+		out[k] = (type(v) == "number" and v == v) and math.clamp(v, spec.min, spec.max) or spec.default
+	end
+	return out
+end
+
+local function fresh()
+	local d = table.clone(DEFAULT)
+	d.settings = cleanSettings(nil)
+	return d
+end
+
 local function loadData(player)
-	if not store then return table.clone(DEFAULT), false end
+	if not store then return fresh(), false end
 	for attempt = 1, 3 do
 		local ok, res = pcall(function()
 			return store:GetAsync("u_" .. player.UserId)
 		end)
 		if ok then
-			local d = table.clone(DEFAULT)
+			local d = fresh()
 			if type(res) == "table" then
 				for k in pairs(DEFAULT) do
 					if type(res[k]) == "number" then d[k] = res[k] end
 				end
+				d.settings = cleanSettings(res.settings)
 			end
 			return d, true
 		end
 		if RunService:IsStudio() and tostring(res):find("access") then
 			-- Studio with "Enable Studio Access to API Services" off: play without saving.
 			print("[BTW] DataStore unavailable in this Studio session; progress won't save.")
-			return table.clone(DEFAULT), false
+			return fresh(), false
 		end
 		task.wait(attempt)
 	end
-	return table.clone(DEFAULT), false -- don't save over data we failed to read
+	return fresh(), false -- don't save over data we failed to read
 end
 
 local function saveData(player)
@@ -77,6 +94,7 @@ local function saveData(player)
 	if not (store and d and d.loaded) then return end
 	local payload = {
 		money = d.money, checkpoint = d.checkpoint, storageCount = d.storageCount, storageValue = d.storageValue,
+		settings = d.settings,
 	}
 	local ok, err = pcall(function()
 		store:UpdateAsync("u_" .. player.UserId, function()
@@ -95,7 +113,19 @@ local function pushStats(player)
 	if ls then ls.Money.Value = d.money end
 	player:SetAttribute("StorageCount", d.storageCount)
 	player:SetAttribute("StorageMax", Config.Storage.start)
+	for k, v in pairs(d.settings) do
+		player:SetAttribute("Set_" .. k, v)
+	end
 end
+
+SettingsRE.OnServerEvent:Connect(function(player, t)
+	local d = data[player]
+	if not d or type(t) ~= "table" then return end
+	d.settings = cleanSettings(t)
+	for k, v in pairs(d.settings) do
+		player:SetAttribute("Set_" .. k, v)
+	end
+end)
 
 -- Checkpoints -----------------------------------------------------------------------------
 local function zoneFolder(n)
@@ -198,14 +228,19 @@ local function dropLoose(fromCube, normal)
 		local best, bestD = nil, Config.Loose.mergeRadius
 		for _, p in ipairs(loose) do
 			local dd = (p.Position - pos).Magnitude
-			if dd < bestD then best, bestD = p, dd end
+			if dd < bestD and not p:GetAttribute("SuckedBy") then best, bestD = p, dd end
 		end
 		if best then
 			best:SetAttribute("Count", best:GetAttribute("Count") + 1)
 			best:SetAttribute("Value", best:GetAttribute("Value") + value)
 			return
 		end
-		removeLoose(loose[1])
+		for _, old in ipairs(loose) do -- recycle the oldest one that isn't mid-flight
+			if not old:GetAttribute("SuckedBy") then
+				removeLoose(old)
+				break
+			end
+		end
 	end
 	local s = Config.Loose.size
 	local p = Instance.new("Part")
@@ -312,22 +347,42 @@ local function inZone(part, pos)
 	return math.abs(rel.X) <= h.X and math.abs(rel.Y) <= h.Y + 3 and math.abs(rel.Z) <= h.Z
 end
 
-local function collect(player, d, p)
-	local max = Config.Storage.start
-	local free = max - d.storageCount
-	if free <= 0 then return end
+-- Claim a loose cube for a player's vacuum: it stops being physics, every client flies it into the nozzle,
+-- and it is banked when the flight ends. Storage space is reserved at claim time.
+local function claim(player, d, p, dist)
+	local free = Config.Storage.start - d.storageCount - (d.reserved or 0)
+	if free <= 0 then return false end
 	local count, value = p:GetAttribute("Count"), p:GetAttribute("Value")
 	local take = math.min(count, free)
 	local takeValue = take == count and value or math.floor(value * take / count + 0.5)
-	d.storageCount += take
-	d.storageValue += takeValue
-	if take == count then
-		removeLoose(p)
-	else
+	if take < count then -- split: the rest stays on the floor as its own cube
 		p:SetAttribute("Count", count - take)
 		p:SetAttribute("Value", value - takeValue)
+		local rest = p
+		p = rest:Clone()
+		p:SetAttribute("Count", take)
+		p:SetAttribute("Value", takeValue)
+		p.Parent = looseFolder
+		table.insert(loose, p)
 	end
-	pushStats(player)
+	local V = Config.Vacuum
+	local dur = math.clamp(dist / V.pullSpeed, V.minFlight, V.maxFlight)
+	d.reserved = (d.reserved or 0) + take
+	p.Anchored = true
+	p.CanCollide = false
+	p:SetAttribute("SuckDur", dur)
+	p:SetAttribute("SuckStart", workspace:GetServerTimeNow())
+	p:SetAttribute("SuckedBy", player.UserId)
+	task.delay(dur, function()
+		d.reserved -= take
+		if p.Parent then removeLoose(p) end
+		if data[player] == d then
+			d.storageCount = math.min(Config.Storage.start, d.storageCount + take)
+			d.storageValue += takeValue
+			pushStats(player)
+		end
+	end)
+	return true
 end
 
 local vacAcc, depAcc = 0, 0
@@ -340,18 +395,16 @@ RunService.Heartbeat:Connect(function(dt)
 			local d = data[player]
 			local char = player.Character
 			local head = char and char:FindFirstChild("Head")
-			if d and head and player:GetAttribute("Equipped") == V.slot and d.storageCount < Config.Storage.start then
+			if d and head and player:GetAttribute("Equipped") == V.slot
+				and d.storageCount + (d.reserved or 0) < Config.Storage.start then
 				local origin = head.Position
 				for i = #loose, 1, -1 do
 					local p = loose[i]
-					if p and p.Parent then
+					if p and p.Parent and not p:GetAttribute("SuckedBy") then
 						local off = p.Position - origin
 						local dist = off.Magnitude
-						if dist <= V.collectRadius then
-							collect(player, d, p)
-							if d.storageCount >= Config.Storage.start then break end
-						elseif dist <= V.range and off.Unit:Dot(v.look) >= V.coneDot then
-							p.AssemblyLinearVelocity = -off.Unit * V.pullSpeed + Vector3.new(0, 4, 0)
+						if dist <= V.collectRadius or (dist <= V.range and off.Unit:Dot(v.look) >= V.coneDot) then
+							if not claim(player, d, p, dist) then break end
 						end
 					end
 				end
