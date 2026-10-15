@@ -4,10 +4,35 @@ local Config = {}
 Config.CUBE_SIZE = 2 -- studs
 Config.WALL_CUBES = { w = 16, h = 10, d = 2 } -- breakable wall in cubes (32 x 20 x 4 studs)
 
-Config.Fists = { cooldown = 0.35, damage = 1, pattern = "cross5", ringDamage = 0.5 }
+Config.Fists = { slot = 1, cooldown = 0.35, damage = 1, pattern = "cross5", ringDamage = 0.5, range = 10 }
 Config.Hammer = { price = 250, cooldown = 0.45, damage = 4, pattern = "cross9" }
 
+-- Hit patterns on the wall face: { u, v, ring } in cube steps. Ring cells take damage * ringDamage.
+Config.Patterns = {
+	cross5 = { { 0, 0, false }, { 1, 0, true }, { -1, 0, true }, { 0, 1, true }, { 0, -1, true } },
+	cross9 = {
+		{ 0, 0, false }, { 1, 0, false }, { -1, 0, false }, { 0, 1, false }, { 0, -1, false },
+		{ 2, 0, true }, { -2, 0, true }, { 0, 2, true }, { 0, -2, true },
+	},
+}
+
+-- Vacuum (slot 2, hold LMB): pulls loose cubes inside a cone in front of the camera.
+Config.Vacuum = { slot = 2, range = 18, coneDot = 0.7, pullSpeed = 38, collectRadius = 3.5, tick = 0.05 }
+
 Config.Storage = { start = 50 }
+
+-- Broken cubes drop as loose pickups. Past maxCount, new drops merge into a nearby loose cube
+-- (it carries Count) or the oldest one is recycled, so the part count stays bounded.
+Config.Loose = { size = 0.9, maxCount = 200, mergeRadius = 6 }
+
+-- Deposit machine: pays the stored Value in batches while you stand in Function.DepositZone.
+Config.Deposit = { batch = 10, tick = 0.15 }
+
+-- A zone's wall counts as "passable" once a hole holeW x holeH cubes, fully through every layer, starts
+-- in one of the bottom (maxStartRow + 1) rows. Then the next Spawn_ZoneN checkpoint is enabled.
+Config.Checkpoint = { holeW = 2, holeH = 3, maxStartRow = 1 }
+
+Config.Save = { store = "BTW_Player_v1", autosave = 60 }
 Config.FirstUpgradeCosts = { 50, 150, 400 } -- Radius / Power / Depth tiers I-III
 
 -- Zones run along -Z. zMax/zMin are the zone's floor bounds (used by ZoneMood and checkpoints).

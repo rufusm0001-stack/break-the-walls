@@ -6,83 +6,100 @@
 **By:** Rufus's Claude (device: main PC)
 
 ## What was done
-- **Zones 1, 2 and 3 are built** in Studio, all from code (`studio/BuildWorld.lua`). It's an indoor stud test facility in the
-  `docs/STYLE_BIBLE.md` palette (rewritten for this game; the skill's colour defaults don't apply).
-  - **Zone 1, Stone Facility:** spawn hall, a 16x10x2 stone wall, deposit machine, tool podium, upgrade board, and a ZONE 1 sign.
-  - **Zone 2, Mine Cave:** the hub, with the landmark sign "NOT EVERY ROOM IS STRAIGHT FORWARD", then two tunnels.
-    - Right tunnel: open, leading to the chamber with the orange ore wall.
-    - Left tunnel: looks like a dead end, but has a small hidden ore vein (`HiddenPassage` attribute). Breaking it
-      opens a crawl-through into the chamber.
-    - Also: mine supports, lanterns, rails and a cart.
-  - **Zone 3, Security Vault: PROVISIONAL.** Its brief is in `docs/ZONE_BRIEFS.md` and needs your review.
-    - Spawn hall, then a red gate ("WARDEN ACTIVE"), then a round arena with `Boss_Placeholder` (the Warden).
-    - The reinforced steel vault wall sits in a red vault frame (the landmark). The exit corridor ends at a
-      "ZONE 4 - COMING SOON" sign.
-- **First person:** `StarterPlayer.CameraMode = LockFirstPerson`. `StarterPlayerScripts.FirstPersonArms` draws blocky
-  viewmodel arms (grey sleeves, tan cuffs, dark gloves), with a bob and a visual-only click jab.
-- **Config:** `ReplicatedStorage.BTW.Config` holds the cube values, hits, storage, costs and zone bounds.
-  `StarterPlayerScripts.ZoneMood` warms the colour correction in Zone 2.
-- **Lighting:** neutral and cool, tuned in Studio. The values are in STYLE_BIBLE, and the reasons are commented in
-  `B.lighting()`.
-- **Settings:** StreamingEnabled is off. The Baseplate and default SpawnLocation were moved to ServerStorage, not
-  deleted.
-- **Verified:**
-  - In Play, first-person screenshots of every zone are in `ui/screenshots/world/`.
-  - `map_qa.luau`: floating 0, corner-hanging 0, tipped 0, zfight 0. `ZFight.lua` scan: 0.
-  - Console: clean.
-  - The map-critic ran and its verdict was "fix first". All 9 punch-list items were fixed and checked in Play,
-    except the tool in hand (there are no tools yet).
+- **The core loop works in Play:** punch, then the cubes drop, then vacuum, then deposit, then money goes up.
+  It's server-authoritative, and every number is in `ReplicatedStorage.BTW.Config`.
+  - **Fists (slot 1):** click or hold LMB.
+    - The server takes the cube under the crosshair and applies `Config.Patterns.cross5`: the centre takes full
+      damage and the ring takes half.
+    - Damage builds up against each cube's `Hits` attribute (`Damage` attribute). Cracked cubes darken toward
+      `#3A3F4B`.
+    - The client draws a grid preview (orange centre, white ring) on the face under the crosshair. It also
+      predicts the flash, the shake and the break, and puts the cube back after 1 s if the server rejects it.
+    - The server checks: equipped slot, cooldown (×0.85 slack), range (`Fists.range` + 3 from the cube centre),
+      that the face points at the player, and line of sight (adjacent wall cubes are allowed).
+  - **Loose cubes:** `Workspace.Loose`, created by the server and owned by the server, collision group "Loose"
+    (doesn't collide with "Players").
+    - They carry `Count` and `Value`.
+    - Past `Config.Loose.maxCount` (200), a new drop merges into a loose cube within 6 studs. If none is that
+      close, the oldest one is recycled.
+  - **Vacuum (slot 2):** hold LMB. The client sends the camera look vector about every 0.15 s.
+    - The server pulls loose cubes inside the cone (`Vacuum.range` / `coneDot`) and collects them within
+      `collectRadius`, up to `Config.Storage.start` (50).
+  - **Deposit:** standing in any zone's `DepositMachine_Placeholder.Function.DepositZone` pays the stored Value in
+    batches of 10 every 0.15 s, with +$ BillboardGui popups.
+  - **Money:** `leaderstats.Money` (IntValue). Storage is shown through the player attributes `StorageCount` and
+    `StorageMax`.
+- **Checkpoints:** when a zone's `BreakableWall` has a hole 2 wide x 3 tall that goes through both layers and starts
+  in the bottom 2 rows (`Config.Checkpoint`), the server enables `Spawn_Zone(N+1)` and toasts everyone.
+  - A player who walks into an open zone gets it saved as their checkpoint and `RespawnLocation`.
+  - `Players.CharacterAutoLoads` is now **false**: GameServer loads the character after the data loads, so the
+    first spawn is already at the right checkpoint.
+  - Tested in Play: breaking through Zone 1 enabled Spawn_Zone2.
+- **Saving:** DataStore `BTW_Player_v1`, key `u_<UserId>`. It holds `{ money, checkpoint, storageCount, storageValue }`.
+  - It loads with 3 retries, saves with UpdateAsync on leave, autosaves every 60 s, and saves in BindToClose.
+  - If the load fails, it never saves over that player's data.
+  - **Not verified yet:** this Studio session has API access off, so GetAsync fails. See Owner steps.
+- **HUD** (`StarterPlayerScripts.HUD`, ToyUI only):
+  - Money pill, top right (counts up).
+  - Storage bar, bottom centre (turns red with "FULL - DEPOSIT!").
+  - A 2-slot hotbar, with a gold selector and ViewportFrame icons of the real held models (no emoji or letters).
+  - Also: an equip name tag, a centre crosshair dot (its own inset-free ScreenGui), and toasts.
+- **FirstPersonArms:** the jab now fires only on a real punch (`ClientState.Jab`). The right hand holds a part-built
+  Vacuum when slot 2 is equipped; it shakes and its mouth spins while sucking.
+- **Verified in Play** (screenshots in `ui/screenshots/core-loop/`):
+  - punched a walk-through hole in Zone 1, then Spawn_Zone2 was enabled
+  - vacuumed 12 cubes, giving 12/50
+  - deposited, with +$10 popups and money going up
+  - a punch fired from the client at a Zone 3 cube far out of range was ignored
+  - Console: no script errors. The only lines are the DataStore access line and its follow-up print.
 
 ## Exact state (Instance paths)
-- `Workspace.World.Zone1|Zone2|Zone3`, each with:
-  - `Shell` rooms (`SpawnHall`, `Hub`, `Chamber`, `Arena`, corridors)
-  - `BreakableWall`, whose `Cube` parts carry the attributes `Zone`, `Hits` and `Value`
-  - `Machines`, `Props`, `WallDecor`, `Lights`
-  - `Spawn_ZoneN`: only Zone 1 is Enabled; Zones 2 and 3 are disabled checkpoints
-- Zone 2 extras: `World.Zone2.LeftTunnel.HiddenVein`, `Rails`, `Supports`, `TunnelSigns`.
-- Placeholders. Each one keeps its swappable `Visual` model separate from the `Function` folder that scripts use:
-  - `DepositMachine_Placeholder`: `Function.DepositZone`, `Function.CounterScreen`
-  - `ToolPodium_Placeholder`: `Function.BuyZone`, `Function.DisplayAnchor`
-  - `UpgradeBoard_Placeholder`: `Function.Screen`, `Function.PromptPart`
-  - `Zone3.Machines.Boss_Placeholder`: `Function.Hitbox`, with the attributes `BossName` and `MaxHP`
-  - `Zone2.Props.MineCart_Placeholder`
-- Dev tools: `ServerStorage.DevTools` holds `StudKit`, `ZFight`, `BuildWorld` and `MapQA`.
-- To rebuild (Edit mode), call `B.init(StudKit, Config)`, then `B.lighting()`, then `B.zone1()`, `B.zone2()` and
-  `B.zone3()`. Each zone rebuilds cleanly on its own; the folder is replaced.
-
-## Meshy candidates (NOT generated; owner to check first)
-No paid art was run. Placeholders that might be worth a Meshy model, most valuable first:
-1. **DepositMachine**: the Zone 1 landmark, with one reskin per zone (facility, mine-wood, vault).
-2. **Boss (the Warden)**: the security robot, 12-14 tall. It needs a rig later if it animates.
-3. **ToolPodium**: the pedestal, plus a **Hammer** display model (the hammer is also needed as a held tool).
-4. **MineCart** (Zone 2). Keep it part-built if it must show an ore fill level.
-5. **VaultFrame emblem** (Zone 3): a round vault door.
-
-Small props (crates, barrels, server racks, plants) are fine as parts.
+- `ReplicatedStorage.BTW`:
+  - `Config`: added `Fists.slot`/`range`, `Patterns`, `Vacuum`, `Loose`, `Deposit`, `Checkpoint` and `Save`
+  - `WallGrid`: shared cube key/index/pattern maths
+  - `ClientState`: client-only equip, vacuuming and Jab state
+  - `Remotes`: created at runtime by GameServer. They are `Punch`, `Vacuum`, `Equip`, `DepositPaid` and `Toast`.
+- `ReplicatedStorage.Modules`:
+  - `ToyUI` (from `studio/ToyUI.lua`)
+  - `Icons`, with `StudTile = rbxassetid://126732731360060`, uploaded free via upload_image
+- `ServerScriptService.GameServer`
+- `StarterPlayerScripts`: `ToolsClient`, `HUD`, `FirstPersonArms` (updated), and `ZoneMood` (untouched)
+- The source of everything is in `studio/` under the same names (`*.server.lua` and `*.client.lua`).
+  - Install: serve the repo root on port 8796, then `GetAsync` + `ScriptEditorService:UpdateSourceAsync`.
+  - Note that the URL is `/studio/<file>`.
+- Zone 2's `LeftTunnel.HiddenVein` cubes have `Hits`, so they're punchable too.
+- The old kit files `studio/HUDClient.lua`, `HotbarClient.lua`, `CartClient.lua` and `DiamondClient.lua` belong to
+  the coal game. They're **not** installed and not used.
 
 ## Owner steps
-- **Set `Lighting.Technology` to ShadowMap by hand.** Scripts can't set it.
-- **Set Avatar type to R15** in Game Settings → Avatar. I couldn't confirm it from a script.
-- **Review the Zone 3 brief** (`docs/ZONE_BRIEFS.md`, PROVISIONAL), then sign it off or change it.
-- **Pick the Meshy candidates** above. Nothing has been spent.
-- **Save the place.** Nothing was published, and I didn't save to Roblox.
+- **Turn on Game Settings → Security → "Enable Studio Access to API Services"**, so DataStore saving can be tested
+  in Studio. I didn't change a security setting.
+  - Then in Play: earn money, Stop, Play again, and the money should still be there.
+  - Until then the console shows one engine line, `StudioAccessToApisNotAllowed`.
+- From before, still open:
+  - set `Lighting.Technology` to ShadowMap
+  - set Avatar to R15
+  - review the Zone 3 brief
+  - pick the Meshy candidates
+- **Save the place.** Nothing was published, and nothing was saved to Roblox.
 
 ## Next step (start here)
-1. **Core loop scripts:**
-   - Fists punch, damaging cubes per `Config.Fists` (the cross5 pattern), with the grid preview
-   - cubes falling as loose pickups
-   - the Vacuum
-   - storage
-   - the deposit machine paying `Value`
-   - money
-   Server-authoritative; the client only predicts hits.
-2. HUD with `studio/ToyUI.lua` (money, storage bar, hotbar). See `ui/UI_PROGRESS.md`.
-3. Zone unlocks: break a wall to enable the next `Spawn_ZoneN` checkpoint.
+1. **Verify saving** once API access is on (above).
+2. **Upgrade board** (`UpgradeBoard_Placeholder`): the Digging tab first, with Radius, Power and Depth at
+   `Config.FirstUpgradeCosts`. The pattern code is ready for it: `WallGrid.cells` takes any pattern name, and
+   damage is a multiplier.
+3. **Tool podium + Hammer** (`Config.Hammer`, pattern `cross9`, already defined).
+   - Slot 3 in the hotbar.
+   - Add the model to `FirstPersonArms` the same way as the Vacuum.
+4. Wall regen or reset per server: right now broken walls stay broken until the server restarts.
+5. A Zone 3 boss gate, so the wall only opens after the Warden. GameServer doesn't gate it yet.
 
 ## Watch out for
-- Builder pipeline: serve `studio/` with `python -m http.server 8796 --bind 127.0.0.1` (8792 belongs to another
-  project), set `HttpEnabled` on for the fetch, then turn it off again.
-- On this PC, Python writes need `encoding='utf-8'`. Heredocs with tricky quotes fail in Git Bash, so write a .py
-  file instead.
-- Lighting gotcha: ceiling SurfaceLights above about 0.4 brightness wash the floor to white. Lanterns above about
-  0.6 turn the whole cave orange.
+- **Serve on port 8796** (8792 belongs to another project): `python -m http.server 8796 --bind 127.0.0.1` from the
+  repo root. Turn `HttpEnabled` on for the fetch, then restore it.
+- **The vacuum is fast** (pullSpeed 38, collect radius 3.5). A screenshot taken mid-pull is hard to time; hold LMB
+  for only about 150 ms.
+- **Punch preview on recessed cubes:** when you aim into a hole, the ring cells of the back layer sit behind
+  front-layer cubes and are hidden. That's correct (they still take damage).
+- **Testing from MCP:** pin the camera with `BindToRenderStep("PinCam", Camera priority)`, look at a target point,
+  then use `user_mouse_input` (hold) for real input.

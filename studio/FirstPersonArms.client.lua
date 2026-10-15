@@ -1,9 +1,11 @@
 -- StarterPlayerScripts.FirstPersonArms: blocky viewmodel arms (dark sleeves, tan cuffs, black gloves) held in front
--- of the first-person camera, like the reference. Placeholder visuals; the tool model will attach to "RightHand".
--- Click = a quick punch jab (visual only for now; the server punch logic comes with the core loop).
+-- of the first-person camera, like the reference. Placeholder visuals.
+-- The jab plays on every real punch (ClientState.Jab, fired by ToolsClient). With slot 2 equipped the right hand
+-- holds the Vacuum (built from parts below), which shakes and spins its nozzle while sucking.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
+local State = require(RS:WaitForChild("BTW"):WaitForChild("ClientState"))
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -15,7 +17,7 @@ local GLOVE = Color3.fromHex("3A3F4B")
 local vm = Instance.new("Model")
 vm.Name = "ViewModel"
 
-local function block(name, size, color)
+local function block(name, size, color, parent)
 	local p = Instance.new("Part")
 	p.Name = name
 	p.Size = size
@@ -26,7 +28,7 @@ local function block(name, size, color)
 	p.CanQuery = false
 	p.CanTouch = false
 	p.CastShadow = false
-	p.Parent = vm
+	p.Parent = parent or vm
 	return p
 end
 
@@ -42,17 +44,32 @@ for _, side in ipairs({ -1, 1 }) do
 	}
 	table.insert(arms, a)
 end
+-- Vacuum: offsets are relative to the right fist (palette: dark metal body, hazard-yellow nozzle, blue screen)
+local vac = Instance.new("Model")
+vac.Name = "Vacuum"
+local VAC_PARTS = {
+	{ "Grip", Vector3.new(0.35, 0.7, 0.35), "1E1E24", CFrame.new(0, -0.05, 0) },
+	{ "Body", Vector3.new(0.75, 0.75, 1.5), "3A3F4B", CFrame.new(0, 0.3, -0.55) },
+	{ "Tank", Vector3.new(0.4, 0.55, 0.9), "1FA7E0", CFrame.new(0.55, 0.3, -0.45) },
+	{ "Stripe", Vector3.new(0.8, 0.8, 0.2), "FFC627", CFrame.new(0, 0.3, -1.35) },
+	{ "Nozzle", Vector3.new(0.45, 0.45, 1.4), "FFC627", CFrame.new(0, 0.3, -2.1) },
+	{ "Mouth", Vector3.new(0.85, 0.85, 0.3), "565C68", CFrame.new(0, 0.3, -2.9) },
+}
+local vacParts = {}
+for _, d in ipairs(VAC_PARTS) do
+	vacParts[d[1]] = { part = block(d[1], d[2], Color3.fromHex(d[3]), vac), offset = d[4] }
+end
+vac.Parent = vm
 vm.Parent = camera
 
 local bob = 0
 local nextArm = 1
+local spin = 0
 
-UserInputService.InputBegan:Connect(function(input, processed)
-	if processed then return end
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		arms[nextArm].punch = 1
-		nextArm = nextArm % 2 + 1
-	end
+State.Jab.Event:Connect(function()
+	if State.equipped ~= 1 then return end
+	arms[nextArm].punch = 1
+	nextArm = nextArm % 2 + 1
 end)
 
 RunService:BindToRenderStep("FirstPersonArms", Enum.RenderPriority.Camera.Value + 1, function(dt)
@@ -73,5 +90,17 @@ RunService:BindToRenderStep("FirstPersonArms", Enum.RenderPriority.Camera.Value 
 		a.fist.CFrame = root * CFrame.new(0, 0, -0.8)
 		local t = inFirst and 0 or 1
 		a.sleeve.Transparency, a.cuff.Transparency, a.fist.Transparency = t, t, t
+	end
+	-- vacuum in the right hand
+	local holdingVac = State.equipped == 2 and inFirst
+	local right = arms[2].fist
+	local shake = State.vacuuming and CFrame.new((math.random() - 0.5) * 0.03, (math.random() - 0.5) * 0.03, 0) or CFrame.new()
+	spin += dt * (State.vacuuming and 14 or 0)
+	local base = right.CFrame * CFrame.new(-0.2, -0.15, 0) * CFrame.Angles(math.rad(-6), math.rad(16), 0) * shake
+	for name, v in pairs(vacParts) do
+		local cf = base * v.offset
+		if name == "Mouth" then cf *= CFrame.Angles(0, 0, spin) end
+		v.part.CFrame = cf
+		v.part.Transparency = holdingVac and 0 or 1
 	end
 end)

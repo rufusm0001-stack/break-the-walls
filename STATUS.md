@@ -1,5 +1,11 @@
 # Status log
 
+## 2026-10-15 (Rufus's Claude, main PC): core loop + minimal HUD
+- Added the server-authoritative core loop. Fists punch with cross5 and a grid preview, broken cubes drop as capped loose cubes, the Vacuum stores them, the deposit machine pays out with +$ popups, and Money is in leaderstats. Saving uses DataStore and is Studio-safe.
+- When a wall has a passable hole, the next Spawn_ZoneN is enabled and becomes the player's checkpoint. Added a ToyUI HUD (money, storage bar, 2-slot hotbar). FirstPersonArms now jabs on real punches and holds a part-built Vacuum.
+- Verified in Play: broke through Zone 1 (Spawn_Zone2 opened), vacuumed to 12/50, deposited (+$10 popups, money up), and an out-of-range exploit punch was ignored. Screenshots are in ui/screenshots/core-loop/.
+- Saving is NOT verified yet: Studio API access is off (an owner step in HANDOFF.md). Nothing was published, and no art was paid for. The stud tile upload was free.
+
 ## 2026-10-15 (Rufus's Claude, main PC): Zones 1-3 built
 - Rewrote docs/STYLE_BIBLE.md for this game: an indoor stud facility, neutral and cool lighting. Added the palette and first-person rules to AGENTS.md, and wrote the Zone 3 brief (PROVISIONAL).
 - Built Zones 1-3 from code (studio/BuildWorld.lua): rooms, breakable cube walls (984 cubes), spawn areas, deposit machines, tool podiums, upgrade boards, signs, props, and a placeholder Boss. Added ReplicatedStorage.BTW.Config, FirstPersonArms and ZoneMood.
