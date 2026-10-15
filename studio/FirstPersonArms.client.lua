@@ -12,10 +12,11 @@ local State = require(RS:WaitForChild("BTW"):WaitForChild("ClientState"))
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
-local ARM_SCALE = 1.1 -- a touch thicker than the real avatar arm so it reads well in first person
+-- length stays a touch longer than the real avatar arm; width and depth are slimmed (owner: "too girthy")
+local ARM_LENGTH, ARM_WIDTH = 1.1, 0.88
 -- arm pose (studs / degrees, camera space). Any of these can be overridden live by setting the same-named
 -- attribute on Camera.ViewModel, which is how the pose was tuned in Play.
-local POSE = { x = 2.0, y = -2.3, z = 0.5, pitch = 26, yaw = 16, roll = 18, vacYaw = 4 }
+local POSE = { x = 2.15, y = -2.3, z = 0.5, pitch = 26, yaw = 16, roll = 18, vacYaw = 4 }
 local SEGMENTS = { "UpperArm", "LowerArm", "Hand" }
 
 local vm = Instance.new("Model")
@@ -83,7 +84,7 @@ local function buildArms(char)
 				for _, c in ipairs(p:GetChildren()) do
 					if not (c:IsA("SurfaceAppearance") or c:IsA("SpecialMesh")) then c:Destroy() end
 				end
-				p.Size = src.Size * ARM_SCALE
+				p.Size = Vector3.new(src.Size.X * ARM_WIDTH, src.Size.Y * ARM_LENGTH, src.Size.Z * ARM_WIDTH)
 				prep(p)
 				p.LocalTransparencyModifier = 0
 				p.Parent = vm
@@ -93,10 +94,10 @@ local function buildArms(char)
 		else -- R6 / unusual rigs: classic blocky arm in the body colour, with a sleeve in the shirt-ish torso colour
 			local skin = colors and (side < 0 and colors.LeftArmColor3 or colors.RightArmColor3) or Color3.fromHex("F5CD30")
 			local sleeve = colors and colors.TorsoColor3 or Color3.fromHex("565C68")
-			local s = ARM_SCALE
-			local up = block(prefix .. "UpperArm", Vector3.new(1, 1.2, 1) * s, sleeve)
-			local low = block(prefix .. "LowerArm", Vector3.new(1, 1, 1) * s, skin)
-			local hand = block(prefix .. "Hand", Vector3.new(1, 0.5, 1) * s, skin)
+			local w, l = ARM_WIDTH, ARM_LENGTH
+			local up = block(prefix .. "UpperArm", Vector3.new(w, 1.2 * l, w), sleeve)
+			local low = block(prefix .. "LowerArm", Vector3.new(w, l, w), skin)
+			local hand = block(prefix .. "Hand", Vector3.new(w, 0.5 * l, w), skin)
 			for _, p in ipairs({ up, low, hand }) do
 				table.insert(a.parts, { part = p, len = p.Size.Y })
 				a.reach += p.Size.Y

@@ -281,7 +281,9 @@ local function lantern(parent, x, z, yTop)
 end
 
 -- ===== breakable walls =====
--- fills x0..x0+w*2, y 0..h*2, z from zFace going -Z for d cubes
+-- fills x0..x0+w*s, y 0..h*s, z from zFace going -Z for d cubes (s = C.CUBE_SIZE)
+-- Walls draw colours from their own seeded Random so a wall rebuild never shifts the rest of the layout.
+local wallRng = Random.new(20261016)
 local function breakable(parent, zone, x0, zFace, wCubes, hCubes, dCubes, opts)
 	opts = opts or {}
 	local f = folder(parent, opts.name or "BreakableWall")
@@ -289,9 +291,10 @@ local function breakable(parent, zone, x0, zFace, wCubes, hCubes, dCubes, opts)
 	local s = C.CUBE_SIZE
 	local n = 0
 	for ix = 0, wCubes - 1 do
+		if ix % 4 == 3 then task.wait() end -- thousands of parts: yield so Studio never freezes
 		for iy = 0, hCubes - 1 do
 			for iz = 0, dCubes - 1 do
-				local colHex = cube.colors[rng:NextInteger(1, #cube.colors)]
+				local colHex = cube.colors[wallRng:NextInteger(1, #cube.colors)]
 				local p = part(f, Vector3.new(s, s, s),
 					CFrame.new(x0 + ix * s + s / 2, (opts.y0 or 0) + iy * s + s / 2, zFace - iz * s - s / 2), hex(colHex), { name = "Cube" })
 				p:SetAttribute("Zone", zone)
@@ -305,6 +308,52 @@ local function breakable(parent, zone, x0, zFace, wCubes, hCubes, dCubes, opts)
 	f:SetAttribute("Zone", zone)
 	f:SetAttribute("CubeCount", n)
 	return f
+end
+
+-- Each zone's main breakable wall fills its 32 x 20 doorway at zFace; layers past the 4-stud doorway wall reach
+-- into the corridor behind (that corridor's hazard band leaves a gap there, see CORRIDOR_NOBAND).
+local MAIN_WALL = { { x0 = -16, zFace = -48 }, { x0 = -16, zFace = -152 }, { x0 = -16, zFace = -268 } }
+local function mainWall(Z, zone)
+	local m = MAIN_WALL[zone]
+	return breakable(Z, zone, m.x0, m.zFace, C.WALL_CUBES.w, C.WALL_CUBES.h, C.Zones[zone].wallDepth)
+end
+local function corridorNoBand(zone)
+	local m = MAIN_WALL[zone]
+	local back = m.zFace - C.Zones[zone].wallDepth * C.CUBE_SIZE
+	return { { back - 2, m.zFace } }
+end
+-- the Zone 2 ore vein: an 8 x 6 x 4 stud cluster in the left tunnel
+local function veinWall(leftEnd)
+	local s = C.CUBE_SIZE
+	return breakable(leftEnd, 2, -26, -124, math.round(8 / s), math.round(6 / s), math.round(4 / s), { name = "HiddenVein", hidden = true })
+end
+
+-- Rebuild only the breakable walls of zone n (after a CUBE_SIZE / depth change), without touching the rest.
+-- Removes hazard stripes that now sit inside the deeper wall. Run Play-stopped, one zone per call.
+function B.rebuildWalls(n)
+	local Z = workspace.World:FindFirstChild("Zone" .. n)
+	assert(Z, "no Zone" .. n)
+	local old = Z:FindFirstChild("BreakableWall")
+	if old then old:Destroy() end
+	local m = MAIN_WALL[n]
+	local d = C.Zones[n].wallDepth * C.CUBE_SIZE
+	local box = CFrame.new(m.x0 + C.WALL_CUBES.w * C.CUBE_SIZE / 2, C.WALL_CUBES.h * C.CUBE_SIZE / 2, m.zFace - d / 2)
+	local size = Vector3.new(C.WALL_CUBES.w * C.CUBE_SIZE - 0.1, C.WALL_CUBES.h * C.CUBE_SIZE - 0.1, d - 0.1)
+	local removed = 0
+	for _, p in ipairs(workspace:GetPartBoundsInBox(box, size)) do
+		if p.Name == "Hazard" and p:IsDescendantOf(Z) then
+			p:Destroy()
+			removed += 1
+		end
+	end
+	local f = mainWall(Z, n)
+	if n == 2 then
+		local leftEnd = Z:FindFirstChild("LeftTunnel")
+		local vein = leftEnd and leftEnd:FindFirstChild("HiddenVein")
+		if vein then vein:Destroy() end
+		if leftEnd then veinWall(leftEnd) end
+	end
+	return f:GetAttribute("CubeCount"), removed
 end
 
 -- ===== placeholders (Visual + Function) =====
@@ -588,9 +637,9 @@ function B.zone1()
 		back = { t = 2 }, front = { t = 4, openings = { { -16, 16, 20 } } }, left = { t = 2 }, right = { t = 2 },
 	} })
 	room(Z, { name = "Corridor", x0 = -16, x1 = 16, zA = -52, zB = -60, h = 24, style = "facility", walls = {
-		back = false, front = false, left = { t = 2 }, right = { t = 2 },
+		back = false, front = false, left = { t = 2, noBand = corridorNoBand(1) }, right = { t = 2, noBand = corridorNoBand(1) },
 	} })
-	breakable(Z, 1, -16, -48, C.WALL_CUBES.w, C.WALL_CUBES.h, C.WALL_CUBES.d)
+	mainWall(Z, 1)
 	ceilingLights(Z, { -16, 0, 16 }, { -8, -24, -40 }, 24)
 	ceilingLights(Z, { 0 }, { -56 }, 24)
 	spawnPad(Z, Vector3.new(0, 0, -8), 1, accent, true)
@@ -640,7 +689,7 @@ function B.zone2()
 	box(leftEnd, -18, 0, -128, -16, 10, -124, P.rock[3], { name = "Plug" })
 	box(leftEnd, -26, 6, -128, -18, 10, -124, P.rock[1], { name = "Plug" })
 	-- a small ore cluster (8 x 6 studs): break it and it opens a crawl-through into the chamber
-	breakable(leftEnd, 2, -26, -124, 4, 3, 2, { name = "HiddenVein", hidden = true })
+	veinWall(leftEnd)
 	for _, sx in ipairs({ -27, -17 }) do
 		box(leftEnd, sx - 1, 0, -122, sx + 1, 12, -120, P.wood, { name = "Post" })
 	end
@@ -650,7 +699,7 @@ function B.zone2()
 		back = false, front = { t = 4, openings = { { -16, 16, 20 } }, noJitter = { -17, 17 } }, left = { t = 2 }, right = { t = 2 },
 	} })
 	-- the right tunnel opens straight into the chamber; block the far end of the LEFT tunnel only (vein above)
-	breakable(Z, 2, -16, -152, C.WALL_CUBES.w, C.WALL_CUBES.h, C.WALL_CUBES.d)
+	mainWall(Z, 2)
 	room(Z, { name = "Corridor", x0 = -16, x1 = 16, zA = -156, zB = -164, h = 24, style = "cave", walls = {
 		back = false, front = false, left = { t = 2 }, right = { t = 2 },
 	} })
@@ -724,9 +773,9 @@ function B.zone3()
 		left = { t = 2 }, right = { t = 2 },
 	} })
 	room(Z, { name = "ExitCorridor", x0 = -16, x1 = 16, zA = -272, zB = -284, h = 24, style = "vault", walls = {
-		back = false, front = { t = 2 }, left = { t = 2 }, right = { t = 2 },
+		back = false, front = { t = 2 }, left = { t = 2, noBand = corridorNoBand(3) }, right = { t = 2, noBand = corridorNoBand(3) },
 	} })
-	breakable(Z, 3, -16, -268, C.WALL_CUBES.w, C.WALL_CUBES.h, C.WALL_CUBES.d)
+	mainWall(Z, 3)
 	ceilingLights(Z, { -16, 16 }, { -174, -190 }, 24)
 	ceilingLights(Z, { -18, 0, 18 }, { -214, -236, -256 }, 34)
 	ceilingLights(Z, { 0 }, { -278 }, 24)

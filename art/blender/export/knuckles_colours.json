@@ -1,0 +1,124 @@
+{
+ "Bronze": {
+  "Bronze_Copper": {
+   "color": [
+    199,
+    77,
+    26
+   ],
+   "material": "Metal"
+  },
+  "Bronze_CopperDark": {
+   "color": [
+    115,
+    41,
+    15
+   ],
+   "material": "Metal"
+  }
+ },
+ "Iron": {
+  "Iron_Steel": {
+   "color": [
+    204,
+    209,
+    219
+   ],
+   "material": "Metal"
+  },
+  "Iron_Gunmetal": {
+   "color": [
+    77,
+    82,
+    92
+   ],
+   "material": "Metal"
+  },
+  "Iron_Chrome": {
+   "color": [
+    242,
+    245,
+    250
+   ],
+   "material": "Metal"
+  }
+ },
+ "Gold": {
+  "Gold_GoldBright": {
+   "color": [
+    255,
+    178,
+    38
+   ],
+   "material": "Metal"
+  },
+  "Gold_Gold": {
+   "color": [
+    255,
+    133,
+    10
+   ],
+   "material": "Metal"
+  },
+  "Gold_Ruby": {
+   "color": [
+    229,
+    5,
+    15
+   ],
+   "material": "Glass"
+  }
+ },
+ "Diamond": {
+  "Diamond_Frost": {
+   "color": [
+    217,
+    247,
+    255
+   ],
+   "material": "Metal"
+  },
+  "Diamond_Crystal": {
+   "color": [
+    13,
+    204,
+    242
+   ],
+   "material": "Glass"
+  },
+  "Diamond_CrystalCore": {
+   "color": [
+    140,
+    255,
+    255
+   ],
+   "material": "Neon"
+  }
+ },
+ "Energy": {
+  "Energy_Navy": {
+   "color": [
+    15,
+    26,
+    140
+   ],
+   "material": "SmoothPlastic"
+  },
+  "Energy_Electric": {
+   "color": [
+    102,
+    191,
+    255
+   ],
+   "material": "Neon"
+  },
+  "Energy_Blade": {
+   "color": [
+    38,
+    71,
+    242
+   ],
+   "material": "SmoothPlastic"
+  }
+ }
+}

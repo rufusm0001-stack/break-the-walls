@@ -1,7 +1,7 @@
 -- StarterPlayerScripts.HUD: the minimal core-loop HUD, built only with ToyUI (docs/UI_RULES.md, 1280x720 budget).
 -- Top right: Money pill (counts up), left of the settings gear (SettingsUI). Bottom centre: Storage bar above a
 -- 2-slot hotbar (1 Fists, 2 Vacuum). Toasts at the top. +$ popups float out of the deposit machine.
--- No crosshair: the punch grid preview is the aim.
+-- A small white centre dot (own inset-free ScreenGui) marks the exact aim; the punch grid preview shows the hit.
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -81,15 +81,44 @@ bottom.Position = UDim2.new(0.5, 0, 1, -16)
 bottom.Size = UDim2.fromOffset(312, 36 + 12 + SLOT + 6)
 bottom.Parent = gui
 
+-- slate facility panel with a dark inset well; the fill gets a gloss strip and 10% ticks so it reads as a gauge
 local storageRoot, storageFace = ToyUI.block({
-	Parent = bottom, Name = "Storage", Size = UDim2.fromOffset(312, 36), color = T.blue, depth = 3, studs = 0.75,
+	Parent = bottom, Name = "Storage", Size = UDim2.fromOffset(312, 36), color = T.slate, depth = 3, studs = 0.85,
 })
-local track, fill = ToyUI.bar(storageFace, UDim2.new(1, -112, 0, 16), UDim2.new(0, 100, 0.5, -8), T.green, 6)
+local track, fill = ToyUI.bar(storageFace, UDim2.new(1, -104, 0, 20), UDim2.new(0, 94, 0.5, -10), T.green, 6)
+track.BackgroundColor3 = T.well
+-- the kit's fill gradient is tinted with the starting colour and would multiply over orange/red; make it neutral
+fill:FindFirstChildOfClass("UIGradient").Color = ColorSequence.new(T.white, T.white:Lerp(T.grey, 0.35))
+local gloss = Instance.new("Frame")
+gloss.Name = "Gloss"
+gloss.BackgroundColor3 = T.white
+gloss.BackgroundTransparency = 0.6
+gloss.BorderSizePixel = 0
+gloss.Position = UDim2.fromOffset(0, 2)
+gloss.Size = UDim2.new(1, 0, 0, 5) -- scale width + clipping: a negative offset width would render mirrored
+fill.ClipsDescendants = true
+gloss.ZIndex = 8
+gloss.Parent = fill
+local gc = Instance.new("UICorner")
+gc.CornerRadius = UDim.new(0, 2)
+gc.Parent = gloss
+for i = 1, 9 do
+	local tick = Instance.new("Frame")
+	tick.Name = "Tick"
+	tick.BackgroundColor3 = T.well
+	tick.BackgroundTransparency = 0.45
+	tick.BorderSizePixel = 0
+	tick.AnchorPoint = Vector2.new(0.5, 0)
+	tick.Position = UDim2.new(i / 10, 0, 0, 3)
+	tick.Size = UDim2.new(0, 2, 1, -6)
+	tick.ZIndex = 8
+	tick.Parent = track
+end
 ToyUI.label(storageFace, {
-	Text = "STORAGE", TextSize = 16, Size = UDim2.fromOffset(84, 33), Position = UDim2.fromOffset(10, 0), ZIndex = 8,
+	Text = "STORAGE", TextSize = 16, Size = UDim2.fromOffset(80, 33), Position = UDim2.fromOffset(10, 0), ZIndex = 8,
 	TextXAlignment = Enum.TextXAlignment.Left,
 })
-local storageText = ToyUI.label(track, { Text = "0 / 50", TextSize = 14, ZIndex = 9 })
+local storageText = ToyUI.label(track, { Text = "0 / 50", TextSize = 14, ZIndex = 10 })
 local storagePop = Instance.new("UIScale")
 storagePop.Parent = storageRoot
 
@@ -99,9 +128,10 @@ local function refreshStorage()
 	local m = player:GetAttribute("StorageMax") or Config.Storage.start
 	local full = c >= m
 	storageText.set(full and "FULL - DEPOSIT!" or (c .. " / " .. m))
+	local frac = math.clamp(c / m, 0, 1)
 	TweenService:Create(fill, TweenInfo.new(0.15), {
-		Size = UDim2.fromScale(math.clamp(c / m, 0, 1), 1),
-		BackgroundColor3 = full and T.red or T.green,
+		Size = UDim2.fromScale(frac, 1),
+		BackgroundColor3 = full and T.red or (frac >= 0.7 and T.orange or T.green),
 	}):Play()
 	if c > lastCount then
 		storagePop.Scale = 1.06
@@ -170,10 +200,10 @@ local slotRoots = {}
 for i, s in ipairs(SLOTS) do
 	local root, face, hit = ToyUI.button({
 		Parent = bar, Name = "Slot" .. i, Size = UDim2.fromOffset(SLOT, SLOT),
-		Position = UDim2.fromOffset((i - 1) * (SLOT + GAP), 0), color = T.cream, depth = 4, studs = 0.8, ZIndex = 3,
+		Position = UDim2.fromOffset((i - 1) * (SLOT + GAP), 0), color = T.sky, depth = 4, studs = 0.8, ZIndex = 3,
 	})
 	if s.icons and s.icons[0] then
-		-- generated icon for the tool's current tier (FistTier / VacuumTier attribute, 0 = starter)
+		-- generated icon for the tool's current tier (FistTier 0-5 / VacuumTier 0-5 attribute, 0 = starter)
 		local icon = ToyUI.icon(face, s.icons[0], UDim2.fromOffset(48, 48), UDim2.fromOffset(6, 2), 8)
 		local shadow = face:FindFirstChild("IconShadow")
 		local function showTier()
@@ -223,6 +253,30 @@ local function showEquipped(slot)
 end
 State.EquipChanged.Event:Connect(showEquipped)
 showEquipped(State.equipped)
+
+-- CENTRE DOT (own ScreenGui with no inset, so it sits on the true screen centre the camera aims through) ---
+local dotGui = Instance.new("ScreenGui")
+dotGui.Name = "CenterDot"
+dotGui.IgnoreGuiInset = true
+dotGui.ScreenInsets = Enum.ScreenInsets.None
+dotGui.ResetOnSpawn = false
+dotGui.DisplayOrder = 5
+dotGui.Parent = player.PlayerGui
+local dot = Instance.new("Frame")
+dot.Name = "Dot"
+dot.AnchorPoint = Vector2.new(0.5, 0.5)
+dot.Position = UDim2.fromScale(0.5, 0.5)
+dot.Size = UDim2.fromOffset(6, 6)
+dot.BackgroundColor3 = T.white
+dot.Parent = dotGui
+local dc = Instance.new("UICorner")
+dc.CornerRadius = UDim.new(1, 0)
+dc.Parent = dot
+local ds = Instance.new("UIStroke")
+ds.Color = T.outline
+ds.Thickness = 1.5
+ds.Transparency = 0.2
+ds.Parent = dot
 
 -- TOASTS ------------------------------------------------------------------------------
 local toastRoot, toastFace = ToyUI.block({

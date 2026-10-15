@@ -1,0 +1,12 @@
+Knuckle dusters, built to the R15 hand (1.042 x 0.317 x 1.204 studs), matching art/icons/fist_1..5.
+
+Knuckles_Bronze: 2 meshes, 6148 tris, Roblox bounds X -0.73..0.73 Y -0.47..-0.15 Z -0.36..0.30 (hand centre = 0,0,0)
+Knuckles_Iron: 3 meshes, 4516 tris, Roblox bounds X -0.95..0.95 Y -0.49..-0.15 Z -0.20..0.20 (hand centre = 0,0,0)
+Knuckles_Gold: 3 meshes, 7104 tris, Roblox bounds X -0.71..0.71 Y -0.58..0.32 Z -0.36..0.36 (hand centre = 0,0,0)
+Knuckles_Diamond: 3 meshes, 592 tris, Roblox bounds X -1.00..1.00 Y -0.43..-0.16 Z -0.45..0.18 (hand centre = 0,0,0)
+Knuckles_Energy: 3 meshes, 10800 tris, Roblox bounds X -1.08..1.08 Y -0.42..0.15 Z -0.56..0.28 (hand centre = 0,0,0)
+
+Origin = the hand's centre, so weld each mesh to RightHand with C0 = CFrame.identity (the meshes keep
+their offsets if imported as one Model with 'Keep model pivot / world position' on).
+Colours/materials per mesh: knuckles_colours.json. First-person copy: scale by (0.88, 1.1, 0.88).
+Spikes on Diamond/Energy point toward the hand's front (-Z in Roblox hand space); turn 180 deg if wrong.

@@ -1,11 +1,18 @@
 -- ReplicatedStorage.BTW.WallGrid: shared by server and client so the predicted and the real hit pattern match.
--- Breakable cubes are BaseParts under Workspace.World with a Hits attribute, on a 2-stud grid.
+-- Breakable cubes are BaseParts under Workspace.World with a Hits attribute, on a Config.CUBE_SIZE grid.
+-- 1-stud cubes have half-stud centres (e.g. -15.5), so keys are counted in half studs: rounding a
+-- half-integer to a whole stud is ambiguous with float noise, rounding x*2 never is.
 local Config = require(script.Parent.Config)
 
 local WallGrid = {}
 
 function WallGrid.key(pos)
-	return string.format("%d,%d,%d", math.round(pos.X), math.round(pos.Y), math.round(pos.Z))
+	return string.format("%d,%d,%d", math.round(pos.X * 2), math.round(pos.Y * 2), math.round(pos.Z * 2))
+end
+
+-- Snap one coordinate to the half-stud grid (for building key lists from positions).
+function WallGrid.q(n)
+	return math.round(n * 2) / 2
 end
 
 function WallGrid.isBreakable(inst)

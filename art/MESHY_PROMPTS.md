@@ -1,6 +1,15 @@
 # Meshy prompts: Break The Walls
 
-The tool line is **Fists → Knuckle Dusters (5 tiers)** plus **Vacuum (4 tiers)**. The Hammer is dropped.
+The tool line is **Fists → Knuckle Dusters (5 tiers)** plus **Vacuum (6 tiers: Basic, Turbo, Cyclone, Mega, Titan,
+Vortex)**. The Hammer is dropped.
+
+**Ready-made packs (2026-10-15):** `Desktop\Break The Walls\meshy\Vacuum_<Tier>\` each hold `icon.png`, four
+reference views (`view_left`, `view_right` (mirrored left), `view_front`, `view_three_quarter`) and `prompt.txt`
+with the Meshy multi-image prompt and settings. Made by `art/gen_meshy_packs.py` (Gemini edits of the icons).
+
+**Knuckle dusters are NOT a Meshy job any more:** they're built in Blender to fit the R15 hand exactly
+(`art/blender/knuckles.py` writes `Desktop\Break The Walls\blender\Knuckles_<Tier>.fbx` + `knuckles_spec.txt`).
+The rule either way: the duster sits **on the knuckles** (the punching end of the hand), never the wrist.
 Drones and excavators come later, and the minecart waits.
 
 **Settings for every job** (from the stud-game playbook):
@@ -15,26 +24,22 @@ Shared style line, appended to every prompt:
 > chunky blocky Roblox game style, simple bold shapes, smooth glossy plastic, bright saturated colours, clean flat
 > colour regions, no realistic detail, no text, no logos, single object, centred
 
-## Knuckle dusters (worn over the blocky Roblox hand; one-handed, the size of a fist)
-Model them **lying flat, finger holes facing the camera**, so they snap onto the viewmodel hand.
-
-| Name | Tier | Prompt |
-|---|---|---|
-| `Knuckles_Bronze` | 1 | A chunky toy knuckle duster with four big round finger rings in a row and a thick curved palm grip underneath, warm bronze-brown metal with slightly darker edges |
-| `Knuckles_Iron` | 2 | A chunky toy knuckle duster with four big round finger rings, polished steel grey with small round rivets along the top bar and a dark grip wrap |
-| `Knuckles_Gold` | 3 | A chunky toy knuckle duster with four big round finger rings, shiny gold with a square red gem set in the middle of the top bar and a black grip |
-| `Knuckles_Diamond` | 4 | A chunky toy knuckle duster whose four finger rings are faceted cyan diamond crystal, a white-silver frame and small crystal spikes on top |
-| `Knuckles_Energy` | 5 | A chunky sci-fi knuckle duster, a dark navy frame with four glowing electric-blue energy rings, small blue lightning fins on top and a glowing core in the grip |
+## Knuckle dusters
+Built in Blender (see above). The old Meshy prompts are in git history if they're ever needed.
 
 ## Vacuums (held in the right hand, nozzle pointing forward; about 3 studs long in game)
-Model them **side-on, nozzle pointing left**, with a pistol grip underneath.
+Pistol grip underneath, nozzle forward. Upload all four views from the pack folder (multi-image to 3D).
 
 | Name | Tier | Prompt |
 |---|---|---|
-| `Vacuum_Basic` | 1 | A chunky handheld toy vacuum blaster: a dark grey boxy body, a long hazard-yellow nozzle with a wide square mouth, a small blue glass tank on top showing grey cubes inside, a black pistol grip underneath |
-| `Vacuum_Turbo` | 2 | A chunky handheld toy vacuum blaster: a bright orange body with black stripes, twin side-by-side nozzles, a bigger blue tank on top, a black pistol grip, a small fan vent on the back |
-| `Vacuum_Mega` | 3 | A big chunky handheld vacuum cannon: a glossy red body with chrome trim, a wide funnel-shaped nozzle, two green glowing tanks on top, a black pistol grip and a front handle |
-| `Vacuum_Vortex` | 4 | A huge futuristic vacuum cannon: a white and cyan body, a round nozzle with a swirling cyan vortex inside, one big glowing cyan tank, chunky fins along the back, a black pistol grip |
+| `Vacuum_Basic` | 1 | Basic: a cobalt-blue body, a yellow flared nozzle, a cyan tank on top, an orange pistol grip |
+| `Vacuum_Turbo` | 2 | Turbo: a fiery orange body with yellow stripes, a red multi-barrel nozzle, a cyan tank |
+| `Vacuum_Cyclone` | 3 | Cyclone: a mint-green body with chrome trim, a clear canister with a white cyclone swirl, a light-blue flared nozzle |
+| `Vacuum_Mega` | 4 | Mega (clearly bigger): a cherry-red body, a big glass dome tank, gauges, blue hoses, a wide yellow funnel nozzle |
+| `Vacuum_Titan` | 5 | Titan (bigger still): purple armour plates with gold trim, lime-green tanks, a wide gold cannon nozzle |
+| `Vacuum_Vortex` | 6 | Vortex (the biggest): a blue and white futuristic body, glowing cyan rings, gold gear cogs, a huge glowing vortex nozzle |
+
+Tiers 4-6 must be visibly bigger in game too: scale the imported models up (about 1.2x, 1.35x, 1.5x of Basic).
 
 ## Machines (one per zone; reskin later)
 | Name | Prompt |

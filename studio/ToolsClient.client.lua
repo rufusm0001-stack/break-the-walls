@@ -142,9 +142,11 @@ end
 -- a broken cube bursts into bouncing chunks (client-only visuals; the real pickup comes from the server)
 local function burst(cube, normal)
 	local color = cube:GetAttribute("OriginalColor") or cube.Color
-	puff(cube.Position + normal, normal, color, 14)
-	for i = 1, 7 do
-		local s = 0.3 + math.random() * 0.35
+	-- chunk size and spread follow the cube size (1-stud cubes break ~3 at a time, so fewer, smaller chunks)
+	local k = cube.Size.X / 2
+	puff(cube.Position + normal * k, normal, color, 10)
+	for i = 1, 5 do
+		local s = (0.3 + math.random() * 0.35) * math.max(k, 0.6)
 		local p = Instance.new("Part")
 		p.Size = Vector3.new(s, s, s)
 		p.Color = color:Lerp(Color3.new(0, 0, 0), math.random() * 0.15)
@@ -152,7 +154,7 @@ local function burst(cube, normal)
 		p.TopSurface = Enum.SurfaceType.Smooth
 		p.CanQuery, p.CanTouch, p.CastShadow = false, false, false
 		p.CollisionGroup = "Loose"
-		p.CFrame = cube.CFrame * CFrame.new((math.random() - 0.5) * 1.4, (math.random() - 0.5) * 1.4, (math.random() - 0.5) * 1.4)
+		p.CFrame = cube.CFrame * CFrame.new((math.random() - 0.5) * 1.4 * k, (math.random() - 0.5) * 1.4 * k, (math.random() - 0.5) * 1.4 * k)
 		p.AssemblyLinearVelocity = normal * (10 + math.random() * 10) + Vector3.new(math.random() * 12 - 6, 6 + math.random() * 8, math.random() * 12 - 6)
 		p.AssemblyAngularVelocity = Vector3.new(math.random() * 20 - 10, math.random() * 20 - 10, math.random() * 20 - 10)
 		p.Parent = camera

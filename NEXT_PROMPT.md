@@ -11,7 +11,7 @@
 
 Owner feedback, 2026-10-15 (Rufus):
 
-## 1. Quick UI fixes (do these first)
+## [DONE 2026-10-15] 1. Quick UI fixes (do these first)
 - **Centre cursor:** bring back a *small* dot in the middle of the screen. It should be white with a thin dark
   outline, about 6 px, in its own inset-free ScreenGui. It was removed in `HUD.client.lua`; see git history for the
   old version.
@@ -23,7 +23,7 @@ Owner feedback, 2026-10-15 (Rufus):
 - **Sensitivity icon:** the settings row icon is a computer mouse, and Rufus didn't know what it was for. Swap it
   for a clearer one (for example a crosshair with arrows) or make the label obvious.
 
-## 2. Arms: thinner and spread out a little
+## [DONE 2026-10-15] 2. Arms: thinner and spread out a little
 In `studio/FirstPersonArms.client.lua`:
 - The arms are "too girthy". Scale **width and depth** down to about 0.8x and keep the length; right now
   `ARM_SCALE = 1.1` scales all three axes.
@@ -31,7 +31,7 @@ In `studio/FirstPersonArms.client.lua`:
 - Tune live in Play by setting attributes on `Camera.ViewModel` (`x`, `y`, `z`, `pitch`, `yaw`, `roll`), then copy
   the result into `POSE`.
 
-## 3. Icons: regenerate a better, consistent set (Gemini)
+## [DONE 2026-10-15] 3. Icons: regenerate a better, consistent set (Gemini)
 - **Coin:** the current one (a block grid on a disc) reads as "broken blocks". Make it a proper **shiny gold coin**,
   or a small stack of gold coins, with a simple emblem or a $ mark.
 - **Fists, 6 tiers (bare plus 5 knuckle dusters):**
@@ -46,7 +46,8 @@ In `studio/FirstPersonArms.client.lua`:
   - Keep the same side-on angle across all six.
 - **After uploading:** update `studio/Icons.lua` (`Vacuum` now runs 0-5) and the comment in `HUD.client.lua`.
 
-## 4. Meshy reference packs (Rufus runs Meshy himself)
+## [DONE 2026-10-15] 4. Meshy reference packs (Rufus runs Meshy himself)
+> Done for the 6 vacuums (4 views each). The knuckle dusters moved to Blender instead (Rufus's call); see HANDOFF.md.
 Make one folder per model under `Desktop\Break The Walls\meshy\<Name>\`. Each folder holds:
 - **`icon.png`:** the hotbar/taskbar icon (the same image as in job 3).
 - **Reference views on a plain light-grey background,** with no text and the same design in every view:
@@ -65,7 +66,7 @@ Generate the views with Gemini image editing from the icon image, so all the vie
 
 Rough cost: about 40 images, about $1.60 on Gemini. Say the total before you run the batch.
 
-## 5. Smaller wall cubes and deeper walls (the map pass; check the part count)
+## [DONE 2026-10-15] 5. Smaller wall cubes and deeper walls (the map pass; check the part count)
 The cubes you punch are too big. **Halve the wall cube size** (`Config.CUBE_SIZE` 2 to 1), which doubles the grid:
 16x10 becomes **32x20** per layer. Also make the walls **deeper** (more layers). The loose floor cubes are fine at
 0.6.

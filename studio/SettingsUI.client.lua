@@ -107,7 +107,7 @@ end
 
 -- SLIDERS ----------------------------------------------------------------------------------
 local ROWS = {
-	{ key = "sensitivity", label = "MOUSE SENSITIVITY", icon = Icons.Mouse, fmt = function(v) return string.format("%.2f", v) end },
+	{ key = "sensitivity", label = "AIM SENSITIVITY", icon = Icons.Aim or Icons.Mouse, fmt = function(v) return string.format("%.2f", v) end },
 	{ key = "music", label = "MUSIC", icon = Icons.Music, fmt = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
 	{ key = "sfx", label = "SOUND EFFECTS", icon = Icons.Speaker, fmt = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
 }

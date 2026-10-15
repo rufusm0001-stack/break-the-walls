@@ -152,9 +152,9 @@ for _, z in ipairs(Config.Zones) do
 		local xs, ys, ds = {}, {}, {}
 		for _, c in ipairs(folder:GetChildren()) do
 			if c:IsA("BasePart") then
-				xs[math.round(c.Position.X)] = true
-				ys[math.round(c.Position.Y)] = true
-				ds[math.round(c.Position.Z)] = true
+				xs[WallGrid.q(c.Position.X)] = true
+				ys[WallGrid.q(c.Position.Y)] = true
+				ds[WallGrid.q(c.Position.Z)] = true
 			end
 		end
 		local function sorted(t)
@@ -169,7 +169,7 @@ end
 
 local function cellOpen(w, x, y)
 	for _, d in ipairs(w.ds) do
-		if index[string.format("%d,%d,%d", x, y, d)] then return false end
+		if index[WallGrid.key(Vector3.new(x, y, d))] then return false end
 	end
 	return true
 end
