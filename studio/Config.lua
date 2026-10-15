@@ -28,6 +28,24 @@ Config.Vacuum = {
 
 Config.Storage = { start = 50 }
 
+-- Tool tiers, bought at each zone's ToolPodium (E = knuckles, F = vacuum). FistTier 0 = bare fists.
+-- Knuckles multiply punch damage; vacuums set storage size and suction range. Saved per player.
+Config.Knuckles = {
+	{ name = "Bronze Knuckles", price = 100, damage = 1.5 },
+	{ name = "Iron Knuckles", price = 400, damage = 2 },
+	{ name = "Gold Knuckles", price = 1500, damage = 3 },
+	{ name = "Diamond Knuckles", price = 5000, damage = 4.5 },
+	{ name = "Energy Knuckles", price = 15000, damage = 6 },
+}
+Config.Vacuums = {
+	[0] = { name = "Basic Vacuum", price = 0, storage = 50, range = 18 },
+	{ name = "Turbo Vacuum", price = 150, storage = 75, range = 20 },
+	{ name = "Cyclone Vacuum", price = 600, storage = 100, range = 22 },
+	{ name = "Mega Vacuum", price = 2000, storage = 150, range = 25 },
+	{ name = "Titan Vacuum", price = 7000, storage = 225, range = 28 },
+	{ name = "Vortex Vacuum", price = 20000, storage = 350, range = 32 },
+}
+
 -- Broken cubes drop as loose pickups. Past maxCount, new drops merge into a nearby loose cube
 -- (it carries Count) or the oldest one is recycled, so the part count stays bounded.
 Config.Loose = { size = 0.6, maxCount = 200, mergeRadius = 6 }

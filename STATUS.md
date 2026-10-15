@@ -1,5 +1,8 @@
 # Status log
 
+## 2026-10-15 (Rufus's Claude, main PC): tool shop
+- The ToolPodium in each zone now sells the next knuckle tier (E) and vacuum tier (F). The tiers are in Config, saved, and change damage, storage and range. Checked in Play: a failed buy, then Bronze, Iron and Turbo bought.
+
 ## 2026-10-15 (Rufus's Claude, main PC): NEXT_PROMPT jobs 1-5
 - HUD: a centre dot is back, the hotbar slots are light blue, the storage bar is a slate gauge (ticks, gloss, green to orange to red), and the sensitivity row is now AIM SENSITIVITY with a crosshair icon. The arms are 0.8x as thick and spread a little wider.
 - Icons v2: a gold coin stack, an aim icon, 6 matching fists (dusters on the knuckles) and 6 vacuums (Basic to Vortex, the last 3 bigger). Then two colour passes and hue matching to Rufus's "nice yellow". About $1.9 on Gemini.

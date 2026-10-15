@@ -46,7 +46,17 @@ do
 	store = ok and ds or nil
 end
 local data = {} -- player -> { money, checkpoint, storageCount, storageValue, settings, loaded, reserved }
-local DEFAULT = { money = 0, checkpoint = 1, storageCount = 0, storageValue = 0 }
+local DEFAULT = { money = 0, checkpoint = 1, storageCount = 0, storageValue = 0, fistTier = 0, vacuumTier = 0 }
+
+-- tool tiers (Config.Knuckles / Config.Vacuums)
+local function storageMax(d)
+	local v = Config.Vacuums[d.vacuumTier or 0] or Config.Vacuums[0]
+	return v.storage
+end
+local function fistMul(d)
+	local k = Config.Knuckles[d.fistTier or 0]
+	return k and k.damage or 1
+end
 
 local function cleanSettings(t)
 	local out = {}
@@ -94,7 +104,7 @@ local function saveData(player)
 	if not (store and d and d.loaded) then return end
 	local payload = {
 		money = d.money, checkpoint = d.checkpoint, storageCount = d.storageCount, storageValue = d.storageValue,
-		settings = d.settings,
+		settings = d.settings, fistTier = d.fistTier, vacuumTier = d.vacuumTier,
 	}
 	local ok, err = pcall(function()
 		store:UpdateAsync("u_" .. player.UserId, function()
@@ -112,7 +122,9 @@ local function pushStats(player)
 	local ls = player:FindFirstChild("leaderstats")
 	if ls then ls.Money.Value = d.money end
 	player:SetAttribute("StorageCount", d.storageCount)
-	player:SetAttribute("StorageMax", Config.Storage.start)
+	player:SetAttribute("StorageMax", storageMax(d))
+	player:SetAttribute("FistTier", d.fistTier)
+	player:SetAttribute("VacuumTier", d.vacuumTier)
 	for k, v in pairs(d.settings) do
 		player:SetAttribute("Set_" .. k, v)
 	end
@@ -126,6 +138,65 @@ SettingsRE.OnServerEvent:Connect(function(player, t)
 		player:SetAttribute("Set_" .. k, v)
 	end
 end)
+
+-- Tool shop: each zone's ToolPodium gets two prompts; the client relabels them per player --------------
+local function buy(player, kind)
+	local d = data[player]
+	if not d then return end
+	local list = kind == "Fist" and Config.Knuckles or Config.Vacuums
+	local field = kind == "Fist" and "fistTier" or "vacuumTier"
+	local nextTier = (d[field] or 0) + 1
+	local item = list[nextTier]
+	if not item then
+		ToastRE:FireClient(player, "ALREADY MAXED OUT!", "green")
+		return
+	end
+	if d.money < item.price then
+		ToastRE:FireClient(player, "NEED $" .. item.price .. " FOR " .. string.upper(item.name), "red")
+		return
+	end
+	d.money -= item.price
+	d[field] = nextTier
+	pushStats(player)
+	ToastRE:FireClient(player, string.upper(item.name) .. " UNLOCKED!", "green")
+end
+
+-- Studio-only test hook (never exists in live servers): ServerStorage.DevGiveMoney:Invoke(player, amount)
+if RunService:IsStudio() then
+	local f = Instance.new("BindableFunction")
+	f.Name = "DevGiveMoney"
+	f.OnInvoke = function(player, amount)
+		local d = data[player]
+		if not d then return false end
+		d.money += amount
+		pushStats(player)
+		return d.money
+	end
+	f.Parent = game:GetService("ServerStorage")
+end
+
+for _, podium in ipairs(World:GetDescendants()) do
+	if podium.Name == "ToolPodium_Placeholder" then
+		local zone = podium:FindFirstChild("BuyZone", true)
+		if zone then
+			for _, spec in ipairs({ { "Fist", Enum.KeyCode.E, "Buy Knuckles" }, { "Vacuum", Enum.KeyCode.F, "Buy Vacuum" } }) do
+				local pp = Instance.new("ProximityPrompt")
+				pp.Name = "Buy" .. spec[1]
+				pp.KeyboardKeyCode = spec[2]
+				pp.ActionText = spec[3]
+				pp.ObjectText = "Tool Shop"
+				pp.HoldDuration = 0.25
+				pp.MaxActivationDistance = 12
+				pp.RequiresLineOfSight = false
+				pp:SetAttribute("Shop", spec[1])
+				pp.Parent = zone
+				pp.Triggered:Connect(function(player)
+					buy(player, spec[1])
+				end)
+			end
+		end
+	end
+end
 
 -- Checkpoints -----------------------------------------------------------------------------
 local function zoneFolder(n)
@@ -310,7 +381,7 @@ PunchRE.OnServerEvent:Connect(function(player, cube, normal)
 	for _, cell in ipairs(WallGrid.cells(cube.Position, normal, Config.Fists.pattern, Config.Fists.ringDamage)) do
 		local c = index[WallGrid.key(cell.pos)]
 		if c then
-			damageCube(c, Config.Fists.damage * cell.mul, normal, zonesHit)
+			damageCube(c, Config.Fists.damage * fistMul(data[player] or {}) * cell.mul, normal, zonesHit)
 		end
 	end
 	for z in pairs(zonesHit) do
@@ -350,7 +421,7 @@ end
 -- Claim a loose cube for a player's vacuum: it stops being physics, every client flies it into the nozzle,
 -- and it is banked when the flight ends. Storage space is reserved at claim time.
 local function claim(player, d, p, dist)
-	local free = Config.Storage.start - d.storageCount - (d.reserved or 0)
+	local free = storageMax(d) - d.storageCount - (d.reserved or 0)
 	if free <= 0 then return false end
 	local count, value = p:GetAttribute("Count"), p:GetAttribute("Value")
 	local take = math.min(count, free)
@@ -377,7 +448,7 @@ local function claim(player, d, p, dist)
 		d.reserved -= take
 		if p.Parent then removeLoose(p) end
 		if data[player] == d then
-			d.storageCount = math.min(Config.Storage.start, d.storageCount + take)
+			d.storageCount = math.min(storageMax(d), d.storageCount + take)
 			d.storageValue += takeValue
 			pushStats(player)
 		end
@@ -396,14 +467,15 @@ RunService.Heartbeat:Connect(function(dt)
 			local char = player.Character
 			local head = char and char:FindFirstChild("Head")
 			if d and head and player:GetAttribute("Equipped") == V.slot
-				and d.storageCount + (d.reserved or 0) < Config.Storage.start then
+				and d.storageCount + (d.reserved or 0) < storageMax(d) then
+				local range = (Config.Vacuums[d.vacuumTier or 0] or Config.Vacuums[0]).range
 				local origin = head.Position
 				for i = #loose, 1, -1 do
 					local p = loose[i]
 					if p and p.Parent and not p:GetAttribute("SuckedBy") then
 						local off = p.Position - origin
 						local dist = off.Magnitude
-						if dist <= V.collectRadius or (dist <= V.range and off.Unit:Dot(v.look) >= V.coneDot) then
+						if dist <= V.collectRadius or (dist <= range and off.Unit:Dot(v.look) >= V.coneDot) then
 							if not claim(player, d, p, dist) then break end
 						end
 					end

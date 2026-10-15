@@ -115,6 +115,29 @@
 - **Security note:** one Roblox key line in api.txt (the one with Assets access) had its first 60 characters
   printed into a session log by mistake. Rufus should regenerate that key.
 
+### 7. Tool shop (last pass of the session)
+- **Tier tables:**
+  - `Config.Knuckles` has 5 tiers. Price 100 / 400 / 1.5K / 5K / 15K; damage x1.5 / 2 / 3 / 4.5 / 6.
+  - `Config.Vacuums` has tiers 0-5. Price 0 / 150 / 600 / 2K / 7K / 20K; storage 50 / 75 / 100 / 150 / 225 / 350;
+    range 18 to 32.
+- **Server (`GameServer`):**
+  - `fistTier` / `vacuumTier` are part of the player data and saved.
+  - `pushStats` sets the `FistTier`, `VacuumTier` and `StorageMax` attributes.
+  - Punch damage uses `fistMul`. Storage and suction range use the vacuum tier.
+- **Podium:** each zone's `ToolPodium_Placeholder.Function.BuyZone` gets two ProximityPrompts.
+  - `BuyFist` (E) and `BuyVacuum` (F) buy the next tier, or toast "NEED $X FOR ...".
+  - The HUD relabels them per player with the next tier's name and price, and disables them when maxed.
+- **Test hook:** `ServerStorage.DevGiveMoney:Invoke(player, amount)` exists in Studio only, for testing.
+- **Checked in Play:**
+  - "NEED $100" with no money.
+  - With $1,000 from the test hook: Bronze, then Iron, then Turbo bought. Money ended at $350, the iron dusters
+    showed on both fists, the hotbar icons updated, storage went to 75, and the prompts moved to Gold and Cyclone.
+  - Screenshots: `pass3/2026-10-15_tool-shop-*.jpg`.
+- **Still to do:**
+  - The podium still shows the old hammer placeholder; put the next tier's model on display.
+  - The "not enough money" toast is green; it should be red, and the HUD toast ignores its colour argument.
+  - The prices are a first guess. Balance them with the 1-stud walls.
+
 ### Checked in Play (screenshots in `ui/screenshots/pass3/`)
 - the centre dot, slimmer arms and the light-blue hotbar
 - the settings panel with the AIM row
@@ -149,7 +172,7 @@ Nothing was published and no Robux was spent. This pass spent about $3.0 on Gemi
 ## Next step (start here)
 1. **Third-person tools:** a server weld of the duster / vacuum onto the character so other players see them.
 2. **Look at every tier in game** (FistTier 1-5, VacuumTier 0-5) and tune the sizes and offsets.
-3. **Tool podium shop:** add `Config.Knuckles` / `Config.Vacuums` tier tables and set FistTier / VacuumTier on
+3. **(Done: tool shop, see section 7.) Next: show the next tier on the podium.** Was: tool podium shop: add `Config.Knuckles` / `Config.Vacuums` tier tables and set FistTier / VacuumTier on
    purchase.
 4. **Upgrade board:** Radius, Power, Depth.
    - Punching a hole now needs many punches, so Radius (a bigger pattern) and Depth (hit more than 1 layer) matter a

@@ -278,6 +278,26 @@ ds.Thickness = 1.5
 ds.Transparency = 0.2
 ds.Parent = dot
 
+-- TOOL SHOP PROMPTS: relabel the podium prompts with this player's next tier and price ---------------------
+local function relabelShop()
+	for _, pp in ipairs(workspace:GetDescendants()) do
+		local kind = pp:IsA("ProximityPrompt") and pp:GetAttribute("Shop")
+		if kind then
+			local tier = (player:GetAttribute(kind == "Fist" and "FistTier" or "VacuumTier") or 0) + 1
+			local item = (kind == "Fist" and Config.Knuckles or Config.Vacuums)[tier]
+			pp.ActionText = item and ("Buy " .. item.name) or "Maxed out"
+			pp.ObjectText = item and ("$" .. short(item.price)) or ""
+			pp.Enabled = item ~= nil
+		end
+	end
+end
+player:GetAttributeChangedSignal("FistTier"):Connect(relabelShop)
+player:GetAttributeChangedSignal("VacuumTier"):Connect(relabelShop)
+task.delay(3, relabelShop)
+workspace.DescendantAdded:Connect(function(d)
+	if d:IsA("ProximityPrompt") and d:GetAttribute("Shop") then relabelShop() end
+end)
+
 -- TOASTS ------------------------------------------------------------------------------
 local toastRoot, toastFace = ToyUI.block({
 	Parent = gui, Name = "Toast", Size = UDim2.fromOffset(480, 48),
