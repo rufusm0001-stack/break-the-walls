@@ -16,3 +16,6 @@ Status: `todo` · `in progress` · `needs polish` · `done`
 Follow `docs/UI_RULES.md` and build everything with `studio/ToyUI.lua` (the stud-toy style: an outlined slab, a
 raised face, a stud texture, Fredoka text with a hard shadow, 4 px corners).
 Size budget at 1280x720: money pill 192x48, storage bar about 300x36, hotbar slot 60, body text 14-18.
+
+## World screenshots
+First-person shots of the built zones (2026-10-15) are in `ui/screenshots/world/`.

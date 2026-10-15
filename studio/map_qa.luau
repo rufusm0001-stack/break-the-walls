@@ -3,8 +3,9 @@
 -- Returns a summary string; set FIX = true to also lower floating props onto the ground.
 
 local FIX = false
-local FOLDERS = { "VoxelScenery", "CaveDecor", "MineSystems", "TownSquare", "HouseLobby", "ValleyDecor",
-	"PickaxeShop", "Workshop", "BlockyTownFountain", "SellStand", "AdaCamp", "DiamondLeaderboard", "CoalNodes", "MineCartLine" }
+-- Break The Walls: floor props and machines per zone (wall decor hangs on purpose, so it isn't scanned)
+local FOLDERS = { "World.Zone1.Props", "World.Zone1.Machines", "World.Zone2.Props", "World.Zone2.Machines",
+	"World.Zone3.Props", "World.Zone3.Machines" }
 local ALLOWED_MATERIALS = { [Enum.Material.Plastic] = true, [Enum.Material.SmoothPlastic] = true,
 	[Enum.Material.Neon] = true, [Enum.Material.Glass] = true, [Enum.Material.ForceField] = true }
 
@@ -62,12 +63,20 @@ local function check(obj, folder)
 	end
 end
 
+local function resolve(path)
+	local o = workspace
+	for seg in path:gmatch("[^%.]+") do
+		o = o and o:FindFirstChild(seg)
+	end
+	return o
+end
 for _, fname in ipairs(FOLDERS) do
-	local f = workspace:FindFirstChild(fname)
+	local f = resolve(fname)
 	if f then
-		local kids = (f:IsA("Folder") or fname == "VoxelScenery" or fname == "CoalNodes" or fname == "CaveDecor") and f:GetChildren() or { f }
+		local kids = f:IsA("Folder") and f:GetChildren() or { f }
 		for _, obj in ipairs(kids) do
-			if obj:IsA("Model") or obj:IsA("BasePart") then check(obj, fname) end
+			-- wall-mounted boards hang on purpose
+			if (obj:IsA("Model") or obj:IsA("BasePart")) and not obj.Name:match("^UpgradeBoard") then check(obj, fname) end
 		end
 	end
 end

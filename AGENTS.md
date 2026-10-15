@@ -11,6 +11,8 @@ Read these first:
 - `ui/UI_PROGRESS.md`
 
 ## Hard rules
+- **Palette and lighting come from docs/STYLE_BIBLE.md; the skill's colour defaults don't apply.**
+- **The game is first person** (CameraMode LockFirstPerson, with blocky arms holding the tool). Check every screenshot from that view.
 - **Never use the trademarked toy-brick brand name anywhere.** Say "stud" or "brick".
 - **World parts are Plastic, with studs on top faces only.** Walls get smooth sides. Build with
   `studio/StudKit.lua`.
