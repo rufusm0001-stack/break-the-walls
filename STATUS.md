@@ -1,5 +1,8 @@
 # Status log
 
+## 2026-10-15 (Rufus's Claude, main PC): UI icons
+- Made 15 icons with Gemini after the top-up (about $0.62): coin, gear, mouse, music, speaker, 6 fist tiers and 4 vacuum tiers. They're cut from magenta, uploaded with upload_image, and wired into the money pill, gear, settings rows and hotbar (tier-aware). Checked in Play.
+
 ## 2026-10-15 (Rufus's Claude, main PC): feel pass: avatar arms, sounds, settings, vacuum swirl
 - Arms are now your own avatar's R15 arms (cloned meshes and shirt, x1.1, angled in from the bottom corners). There's no cursor or crosshair now.
 - Punching got chunk bursts, dust and a camera kick. Loose cubes are smaller (0.6).

@@ -11,6 +11,7 @@ local BTW = RS:WaitForChild("BTW")
 local Config = require(BTW.Config)
 local State = require(BTW.ClientState)
 local ToyUI = require(RS:WaitForChild("Modules"):WaitForChild("ToyUI"))
+local Icons = require(RS.Modules:WaitForChild("Icons"))
 local Remotes = BTW:WaitForChild("Remotes")
 local T = ToyUI.Theme
 local player = Players.LocalPlayer
@@ -33,9 +34,17 @@ local moneyRoot, moneyFace = ToyUI.block({
 	Parent = gui, Name = "Money", Size = UDim2.fromOffset(192, 48),
 	Position = UDim2.new(1, -16 - 48 - 12, 0, 12), AnchorPoint = Vector2.new(1, 0), color = T.gold, depth = 4,
 })
-local moneyText = ToyUI.label(moneyFace, {
-	Text = "$0", TextSize = 30, Size = UDim2.new(1, -24, 1, 0), Position = UDim2.fromOffset(12, 0),
-})
+local moneyText
+if Icons.Coin then -- the coin hangs off the left end of the pill, like the reference HUDs
+	ToyUI.icon(moneyRoot, Icons.Coin, UDim2.fromOffset(52, 52), UDim2.fromOffset(-22, -4), 8)
+	moneyText = ToyUI.label(moneyFace, {
+		Text = "$0", TextSize = 30, Size = UDim2.new(1, -46, 1, 0), Position = UDim2.fromOffset(34, 0),
+	})
+else
+	moneyText = ToyUI.label(moneyFace, {
+		Text = "$0", TextSize = 30, Size = UDim2.new(1, -24, 1, 0), Position = UDim2.fromOffset(12, 0),
+	})
+end
 local moneyPop = Instance.new("UIScale")
 moneyPop.Parent = moneyRoot
 
@@ -143,12 +152,12 @@ local function viewport(face, parts, camCF)
 end
 
 local SLOTS = {
-	{ name = "FISTS", parts = {
+	{ name = "FISTS", icons = Icons.Fist, tierAttr = "FistTier", parts = {
 		{ Vector3.new(1.4, 1.4, 1.4), "3A3F4B", CFrame.new(0, 0, 0) },
 		{ Vector3.new(1.2, 1.2, 0.5), "D9A066", CFrame.new(0, 0, 0.95) },
 		{ Vector3.new(1.1, 1.1, 1.4), "565C68", CFrame.new(0, 0, 1.9) },
 	}, cam = CFrame.lookAt(Vector3.new(4.5, 3, -4.5), Vector3.new(0, 0, 0.6)) },
-	{ name = "VACUUM", parts = {
+	{ name = "VACUUM", icons = Icons.Vacuum, tierAttr = "VacuumTier", parts = {
 		{ Vector3.new(0.75, 0.75, 1.5), "3A3F4B", CFrame.new(0, 0, 0.6) },
 		{ Vector3.new(0.4, 0.55, 0.9), "1FA7E0", CFrame.new(0.55, 0, 0.7) },
 		{ Vector3.new(0.8, 0.8, 0.2), "FFC627", CFrame.new(0, 0, -0.2) },
@@ -163,7 +172,21 @@ for i, s in ipairs(SLOTS) do
 		Parent = bar, Name = "Slot" .. i, Size = UDim2.fromOffset(SLOT, SLOT),
 		Position = UDim2.fromOffset((i - 1) * (SLOT + GAP), 0), color = T.cream, depth = 4, studs = 0.8, ZIndex = 3,
 	})
-	viewport(face, s.parts, s.cam)
+	if s.icons and s.icons[0] then
+		-- generated icon for the tool's current tier (FistTier / VacuumTier attribute, 0 = starter)
+		local icon = ToyUI.icon(face, s.icons[0], UDim2.fromOffset(48, 48), UDim2.fromOffset(6, 2), 8)
+		local shadow = face:FindFirstChild("IconShadow")
+		local function showTier()
+			local tier = player:GetAttribute(s.tierAttr) or 0
+			local img = s.icons[tier] or s.icons[0]
+			icon.Image = img
+			if shadow then shadow.Image = img end
+		end
+		player:GetAttributeChangedSignal(s.tierAttr):Connect(showTier)
+		showTier()
+	else
+		viewport(face, s.parts, s.cam)
+	end
 	ToyUI.label(face, {
 		Text = tostring(i), TextSize = 14, Size = UDim2.fromOffset(16, 16), Position = UDim2.fromOffset(4, 2), ZIndex = 12,
 	})

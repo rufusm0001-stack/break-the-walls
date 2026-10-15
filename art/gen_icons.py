@@ -42,7 +42,8 @@ ICONS = {
     "emblem in its centre",
     "gear": "A chunky settings gear cog with eight square teeth and a round hole in the middle, light steel grey "
     "with a darker grey inner ring",
-    "speaker": "A chunky loudspeaker icon with two curved sound-wave arcs coming out of it, white and light grey",
+    "speaker": "A free-standing chunky loudspeaker cone shape seen from the side with two curved sound-wave arcs "
+    "coming out of it, white and light grey with a dark grey cone, nothing behind it (no circle, no badge, no button)",
     "music": "A chunky double music note (two joined eighth notes), bright yellow",
     "mouse": "A chunky computer mouse seen from above at a slight angle, white with a light-blue scroll wheel",
     # tool tiers: fists, then knuckle dusters (they replace the hammer)
@@ -104,6 +105,10 @@ def cut(name: str) -> Path:
             if 0 <= ny < h and 0 <= nx < w and not seen[ny, nx] and passable[ny, nx]:
                 seen[ny, nx] = True
                 q.append((ny, nx))
+    # trapped pockets (a gear's hole, a ring's inside) never touch the edge: drop anything that is strongly
+    # magenta anywhere, since the prompt bans pink on the subject
+    strong = (img[..., 0] > 170) & (img[..., 2] > 140) & (img[..., 1] < 100) & (np.abs(img[..., 0] - img[..., 2]) < 110)
+    seen = seen | strong
     alpha = np.where(seen, 0, 255).astype(np.uint8)
     rgb = img.copy()
     # despill: pixels next to the cut that still lean magenta get pulled to the outline navy

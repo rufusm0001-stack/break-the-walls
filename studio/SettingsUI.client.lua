@@ -13,6 +13,7 @@ local BTW = RS:WaitForChild("BTW")
 local Config = require(BTW.Config)
 local State = require(BTW.ClientState)
 local ToyUI = require(RS:WaitForChild("Modules"):WaitForChild("ToyUI"))
+local Icons = require(RS.Modules:WaitForChild("Icons"))
 local Remotes = BTW:WaitForChild("Remotes")
 local T = ToyUI.Theme
 local player = Players.LocalPlayer
@@ -41,7 +42,9 @@ local gearRoot, gearFace, gearHit = ToyUI.button({
 	Parent = gui, Name = "Gear", Size = UDim2.fromOffset(48, 48),
 	Position = UDim2.new(1, -16, 0, 12), AnchorPoint = Vector2.new(1, 0), color = T.blue, depth = 5, studs = 0.75,
 })
-do -- a 3D gear built from parts (swap for the generated gear icon once it exists)
+if Icons.Gear then
+	ToyUI.icon(gearFace, Icons.Gear, UDim2.fromOffset(36, 36), UDim2.new(0.5, -18, 0.5, -20), 8)
+else -- a 3D gear built from parts, used when the generated icon is missing
 	local vp = Instance.new("ViewportFrame")
 	vp.BackgroundTransparency = 1
 	vp.Size = UDim2.fromOffset(36, 36)
@@ -104,16 +107,21 @@ end
 
 -- SLIDERS ----------------------------------------------------------------------------------
 local ROWS = {
-	{ key = "sensitivity", label = "MOUSE SENSITIVITY", fmt = function(v) return string.format("%.2f", v) end },
-	{ key = "music", label = "MUSIC", fmt = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
-	{ key = "sfx", label = "SOUND EFFECTS", fmt = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
+	{ key = "sensitivity", label = "MOUSE SENSITIVITY", icon = Icons.Mouse, fmt = function(v) return string.format("%.2f", v) end },
+	{ key = "music", label = "MUSIC", icon = Icons.Music, fmt = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
+	{ key = "sfx", label = "SOUND EFFECTS", icon = Icons.Speaker, fmt = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
 }
 local dragging
 for i, row in ipairs(ROWS) do
 	local spec = Config.Settings[row.key]
 	local y = 52 + (i - 1) * 88
+	local labelX = 28
+	if row.icon then
+		ToyUI.icon(panelFace, row.icon, UDim2.fromOffset(32, 32), UDim2.fromOffset(26, y - 5), 27)
+		labelX = 66
+	end
 	ToyUI.label(panelFace, {
-		Text = row.label, TextSize = 20, Size = UDim2.fromOffset(300, 24), Position = UDim2.fromOffset(28, y),
+		Text = row.label, TextSize = 20, Size = UDim2.fromOffset(300, 24), Position = UDim2.fromOffset(labelX, y),
 		TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 26,
 	})
 	local valueText = ToyUI.label(panelFace, {

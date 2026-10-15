@@ -6,10 +6,10 @@ Status: `todo` · `in progress` · `needs polish` · `done`
 
 | Screen / panel | Status | Instance path | Latest screenshot | Notes |
 |----------------|--------|---------------|-------------------|-------|
-| Main HUD (money, storage bar, hotbar) | needs polish | `PlayerGui.HUD` (StarterPlayerScripts.HUD), `PlayerGui.Crosshair` | `screenshots/core-loop/2026-10-15_vacuum-held.jpg` | Minimal ToyUI pass: money pill top right, storage bar + 2-slot hotbar (ViewportFrame icons) bottom centre, toasts. No zone name yet, no coin icon (needs a generated icon), ui-critic not run, phone viewport not checked. |
+| Main HUD (money, storage bar, hotbar) | needs polish | `PlayerGui.HUD` (StarterPlayerScripts.HUD), `PlayerGui.Crosshair` | `screenshots/core-loop/2026-10-15_vacuum-held.jpg` | Minimal ToyUI pass: money pill top right, storage bar + 2-slot hotbar (ViewportFrame icons) bottom centre, toasts. Coin and tool icons in (Gemini set, art/icons/). No zone name yet, ui-critic not run, phone viewport not checked. |
 | Upgrade shop | todo | | | |
 | Prestige panel | todo | | | |
-| Settings | needs polish | `PlayerGui.Settings` (StarterPlayerScripts.SettingsUI) | `screenshots/core-loop/2026-10-15_settings-panel.jpg` | Gear (top right, key M), panel with 3 sliders (sensitivity, music, SFX), saved via Remotes.Settings. The gear and close icons are drawn and 3D for now; swap in the generated gear icon. |
+| Settings | needs polish | `PlayerGui.Settings` (StarterPlayerScripts.SettingsUI) | `screenshots/core-loop/2026-10-15_settings-panel.jpg` | Gear (top right, key M), panel with 3 sliders (sensitivity, music, SFX), saved via Remotes.Settings. Gear, mouse, music and speaker icons are in; the close cross is drawn. Screenshot: `2026-10-15_icons-hud-settings.jpg`. |
 | Number popups / hit effects | in progress | HUD (DepositPaid BillboardGui), ToolsClient (PunchPreview, flash, burst) | `screenshots/core-loop/2026-10-15_fists-grid-preview.jpg`, `2026-10-15_deposit-popup.jpg` | +$ popups out of the deposit machine; punch grid preview (orange centre, white ring), white flash + shake, predicted break burst. No sounds yet. |
 
 ## Style rules

@@ -66,14 +66,23 @@
 - console: no script errors
 
 ## Art
-- **Gemini is blocked: HTTP 402, prepaid credit used up.** No icons were made, and $0 was spent (logged).
-  - Once Rufus tops up at ai.studio, run `python art/gen_icons.py` and it makes all 15 icons:
-    - coin, gear, speaker, music, mouse
-    - fist_0 to fist_5 (bare, bronze, iron, gold, diamond, energy knuckles)
-    - vacuum_0 to vacuum_3
-  - About $0.60. The raw images go to `Desktop\Break The Walls\icons\raw`. The cut 256px PNGs go to `icons\cut` and
-    to `art/icons/`.
-  - The key is read inside the script and never printed.
+- **Icons are done and in the game** (Gemini, about $0.62, logged).
+  - The 15 icons: coin, gear, mouse, music, speaker; fist_0 to fist_5 (bare, bronze, iron, gold, diamond, energy);
+    vacuum_0 to vacuum_3 (basic, turbo, mega, vortex).
+  - Their ids are in `ReplicatedStorage.Modules.Icons` (`studio/Icons.lua`), uploaded via the MCP `upload_image`.
+  - The cut PNGs are in `art/icons/`, with `_contact_sheet.png`. Raw and cut copies are in
+    `Desktop\Break The Walls\icons\`.
+- **Where the icons go:**
+  - Coin: on the money pill.
+  - Gear: on the settings button.
+  - Mouse, music and speaker: on the settings rows.
+  - Fist and Vacuum: the hotbar shows the tier from the `FistTier` / `VacuumTier` player attributes (0 = starter).
+    Set them when the shop sells tiers.
+- **Regenerating:** run `python art/gen_icons.py name` to redo one icon, or `--cut` to re-run only the background
+  cut. Gemini paints on magenta, which gets flood-filled away; trapped pockets that are strongly magenta are dropped
+  too. The key is read inside the script and never printed.
+- **Freshly uploaded images** can take a few seconds to stream in during the first Play. If an icon is blank, wait
+  before "fixing" it.
 - **Uploading:**
   - The Studio MCP `upload_image` works with no key (the stud tile went up that way).
   - The Open Cloud key in api.txt had no scopes the last time it was checked, so it needs the
@@ -88,7 +97,7 @@
   - `ClientState`: `menuOpen`, `nozzle`, `shake`/`kick()`, `Sfx`
   - `Sounds`
   - `Remotes`: Punch, Vacuum, Equip, DepositPaid, Toast, and the new **Settings**
-- `ReplicatedStorage.Modules`: `ToyUI`, `Icons` (StudTile)
+- `ReplicatedStorage.Modules`: `ToyUI`, `Icons` (StudTile, Coin, Gear, Mouse, Music, Speaker, Fist[0-5], Vacuum[0-3])
 - `ServerScriptService.GameServer`
 - `StarterPlayerScripts`: `ToolsClient`, `HUD`, `SettingsUI` (new), `Audio` (new), `FirstPersonArms` (rewritten),
   `ZoneMood`
@@ -101,7 +110,6 @@
   - earn money and change a setting
   - Stop, then Play again
   - both should still be there
-- **Top up Gemini** (or say to use OpenAI instead) for the icons.
 - **Meshy models:** knuckle dusters and vacuums first.
 - From before, still open:
   - `Lighting.Technology` = ShadowMap
@@ -112,12 +120,10 @@
 Nothing was published and no Robux was spent.
 
 ## Next step (start here)
-1. Icons, once Gemini is topped up. Then put the coin on the money pill, the fist and vacuum icons on the hotbar,
-   and the gear icon on the gear (replacing the 3D placeholders).
-2. Swap the placeholder vacuum for `Vacuum_Basic` and add the knuckle models on the hand.
-3. Tool podium shop: knuckle tiers and vacuum tiers (add `Config.Knuckles` and `Config.Vacuums` tier tables).
-4. Upgrade board (Digging: Radius, Power, Depth).
-5. Map pass, last: deeper walls, maybe smaller wall cubes. That's Rufus's call, see below.
+1. Swap the placeholder vacuum for `Vacuum_Basic` and add the knuckle models on the hand.
+2. Tool podium shop (set FistTier / VacuumTier on purchase): knuckle tiers and vacuum tiers (add `Config.Knuckles` and `Config.Vacuums` tier tables).
+3. Upgrade board (Digging: Radius, Power, Depth).
+4. Map pass, last: deeper walls, maybe smaller wall cubes. That's Rufus's call, see below.
 
 ## Watch out for
 - **"Blocks too big":** this pass shrank the **loose** cubes (0.9 to 0.6) and made breaks burst into chunks.
